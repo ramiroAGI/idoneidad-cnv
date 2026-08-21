@@ -1,0 +1,1104 @@
+<title>Idoneidad CNV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --bg:#EFF2F1; --bg-2:#FFFFFF; --bg-3:#E3E8E6;
+  --fg:#111819; --fg-2:#41504F; --fg-3:#6E7D7B;
+  --line:#CFD8D5; --line-2:#B9C4C1;
+  --accent:#0E6E62; --accent-2:#0A544B; --accent-soft:#DBEAE6; --on-accent:#FFFFFF;
+  --ok:#2C7A4F; --ok-soft:#DDEDE2;
+  --bad:#AF3626; --bad-soft:#F5E0DB;
+  --flag:#9C6B15; --flag-soft:#F4E9D2;
+  --shadow:0 1px 2px rgba(17,24,25,.06), 0 8px 24px -16px rgba(17,24,25,.35);
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1416; --bg-2:#161D1F; --bg-3:#1E2729;
+    --fg:#E5ECEA; --fg-2:#AAB8B6; --fg-3:#7E8D8B;
+    --line:#27312F; --line-2:#36423F;
+    --accent:#4CC6B2; --accent-2:#7EDACA; --accent-soft:#12312D; --on-accent:#06201C;
+    --ok:#5FC287; --ok-soft:#14301F;
+    --bad:#F0876F; --bad-soft:#34191A;
+    --flag:#DBA850; --flag-soft:#32260E;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1416; --bg-2:#161D1F; --bg-3:#1E2729;
+  --fg:#E5ECEA; --fg-2:#AAB8B6; --fg-3:#7E8D8B;
+  --line:#27312F; --line-2:#36423F;
+  --accent:#4CC6B2; --accent-2:#7EDACA; --accent-soft:#12312D; --on-accent:#06201C;
+  --ok:#5FC287; --ok-soft:#14301F;
+  --bad:#F0876F; --bad-soft:#34191A;
+  --flag:#DBA850; --flag-soft:#32260E;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:Archivo,"Segoe UI",system-ui,sans-serif;
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; text-wrap:balance; font-weight:600; letter-spacing:-.015em}
+p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer; background:none; border:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--fg-3); font-weight:600}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1020px; margin:0 auto; padding:0 20px 80px}
+.top{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--line);
+}
+.top-in{max-width:1020px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; gap:16px}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+.brand b{font-size:17px; font-weight:700; letter-spacing:-.02em}
+.brand span{font-size:12px; color:var(--fg-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.top-right{margin-left:auto; display:flex; align-items:center; gap:10px}
+.btn{
+  border:1px solid var(--line-2); border-radius:var(--r); padding:8px 14px;
+  font-size:14px; font-weight:500; background:var(--bg-2); transition:border-color .15s, background .15s;
+}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn-p{background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600}
+.btn-p:hover{background:var(--accent-2); border-color:var(--accent-2); color:var(--on-accent)}
+.btn-s{font-size:13px; padding:6px 11px}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+
+/* ---------- panel ---------- */
+.hero{padding:34px 0 26px; display:grid; gap:14px; grid-template-columns:1fr auto; align-items:end}
+.hero h1{font-size:clamp(28px,4.6vw,42px); line-height:1.06}
+.hero .sub{color:var(--fg-2); max-width:52ch; margin-top:8px; font-size:15px}
+.countdown{text-align:right; display:grid; gap:4px; justify-items:end}
+.countdown .n{font-size:34px; font-weight:500; line-height:1}
+.countdown input{
+  font:inherit; font-size:13px; color:var(--fg-2); background:var(--bg-2);
+  border:1px solid var(--line); border-radius:8px; padding:5px 8px;
+}
+.grid{display:grid; gap:14px}
+.cards{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{
+  background:var(--bg-2); border:1px solid var(--line); border-radius:var(--r);
+  padding:18px; display:flex; flex-direction:column; gap:10px; text-align:left;
+  transition:border-color .15s, transform .15s; box-shadow:var(--shadow);
+}
+button.card:hover{border-color:var(--accent); transform:translateY(-1px)}
+.card h3{font-size:17px}
+.card .meta{font-size:13px; color:var(--fg-3); margin-top:auto}
+.card .desc{font-size:13.5px; color:var(--fg-2); line-height:1.45}
+.tag{
+  display:inline-flex; align-items:center; gap:6px; align-self:flex-start;
+  font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
+  padding:3px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent-2);
+}
+.tag.done{background:var(--ok-soft); color:var(--ok)}
+.tag.warn{background:var(--flag-soft); color:var(--flag)}
+section{margin-top:38px}
+.sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px; flex-wrap:wrap}
+.sec-head h2{font-size:19px}
+.sec-head .note{font-size:13px; color:var(--fg-3)}
+
+/* tabla puntajes */
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--bg-2)}
+table{border-collapse:collapse; width:100%; min-width:520px; font-size:14px}
+th,td{padding:11px 14px; text-align:right; border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-3); font-weight:600}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+td.total{font-weight:600}
+.pill{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600}
+.pill.ok{background:var(--ok-soft); color:var(--ok)}
+.pill.bad{background:var(--bad-soft); color:var(--bad)}
+.dash{color:var(--fg-3)}
+
+/* plan */
+.weeks{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+.wk{
+  border:1px solid var(--line); background:var(--bg-2); border-radius:999px;
+  padding:6px 14px; font-size:13px; font-weight:500;
+}
+.wk[aria-selected="true"]{background:var(--fg); color:var(--bg); border-color:var(--fg)}
+.days{display:grid; gap:8px}
+.day{
+  display:grid; grid-template-columns:auto 60px 1fr; gap:14px; align-items:start;
+  background:var(--bg-2); border:1px solid var(--line); border-radius:var(--r); padding:12px 14px;
+}
+.day.rest{background:transparent; border-style:dashed}
+.chk{
+  width:22px; height:22px; border-radius:6px; border:1.5px solid var(--line-2);
+  display:grid; place-items:center; margin-top:2px; flex:none; background:var(--bg);
+}
+.chk[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.chk svg{width:13px; height:13px; opacity:0}
+.chk[aria-pressed="true"] svg{opacity:1}
+.day-id{font-size:13px; font-weight:600; color:var(--fg-2); padding-top:2px}
+.day-id em{display:block; font-style:normal; font-size:11px; color:var(--fg-3); font-weight:500; text-transform:uppercase; letter-spacing:.06em}
+.blocks{display:grid; gap:5px; font-size:13.5px; color:var(--fg-2); line-height:1.42}
+.blocks b{color:var(--fg); font-weight:600; font-family:"IBM Plex Mono",monospace; font-size:12px; margin-right:6px}
+.day.done .blocks{opacity:.5}
+
+/* reglas */
+.rules{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.rule{background:var(--bg-2); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--r); padding:14px 16px}
+.rule h4{margin:0 0 4px; font-size:14px; font-weight:600}
+.rule p{font-size:13.5px; color:var(--fg-2); line-height:1.45}
+
+/* ---------- quiz ---------- */
+.qbar{
+  position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1px solid var(--line);
+}
+.qbar-in{max-width:760px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; gap:14px}
+.qbar .lbl{font-size:13px; color:var(--fg-3); font-weight:500}
+.clock{font-size:19px; font-weight:500; letter-spacing:.02em}
+.clock.warn{color:var(--flag)}
+.clock.crit{color:var(--bad)}
+.prog{height:3px; background:var(--bg-3)}
+.prog i{display:block; height:100%; background:var(--accent); transition:width .25s}
+.qwrap{max-width:760px; margin:0 auto; padding:26px 20px 140px}
+.qmeta{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap}
+.mod-tag{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-2); background:var(--accent-soft); padding:3px 9px; border-radius:999px}
+.qnum{font-size:13px; color:var(--fg-3)}
+.qtext{
+  font-family:"Source Serif 4",Georgia,serif; font-size:20.5px; line-height:1.4;
+  letter-spacing:-.005em; margin-bottom:22px;
+}
+.opts{display:grid; gap:9px}
+.opt{
+  display:grid; grid-template-columns:26px 1fr; gap:12px; align-items:start;
+  border:1px solid var(--line); background:var(--bg-2); border-radius:var(--r);
+  padding:13px 15px; text-align:left; font-size:15.5px; line-height:1.42;
+  transition:border-color .12s, background .12s;
+}
+.opt:hover{border-color:var(--line-2); background:var(--bg-3)}
+.opt .k{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500;
+  width:22px; height:22px; border-radius:6px; border:1px solid var(--line-2);
+  display:grid; place-items:center; color:var(--fg-3); margin-top:1px;
+}
+.opt[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.opt[aria-pressed="true"] .k{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+.opt.good{border-color:var(--ok); background:var(--ok-soft)}
+.opt.good .k{background:var(--ok); border-color:var(--ok); color:var(--bg-2)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad); border-color:var(--bad); color:var(--bg-2)}
+.opt:disabled{cursor:default}
+.expl{
+  margin-top:16px; border-radius:var(--r); padding:14px 16px; font-size:14.5px; line-height:1.5;
+  border:1px solid var(--line); background:var(--bg-2); display:grid; gap:6px;
+}
+.expl.good{border-color:var(--ok); background:var(--ok-soft)}
+.expl.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.expl .verdict{font-weight:600; font-size:13px; letter-spacing:.02em}
+.expl .ref{font-size:12px; color:var(--fg-3); font-family:"IBM Plex Mono",monospace}
+.qfoot{
+  position:fixed; left:0; right:0; bottom:0; background:var(--bg-2); border-top:1px solid var(--line);
+  padding:12px 20px; z-index:15;
+}
+.qfoot-in{max-width:760px; margin:0 auto; display:flex; align-items:center; gap:10px}
+.qfoot .spacer{flex:1}
+.navgrid{display:flex; flex-wrap:wrap; gap:4px; max-height:76px; overflow-y:auto; padding:2px 0}
+.nq{
+  width:26px; height:26px; border-radius:6px; border:1px solid var(--line);
+  font-size:11px; font-family:"IBM Plex Mono",monospace; display:grid; place-items:center;
+  background:var(--bg); color:var(--fg-3);
+}
+.nq.ans{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-2); font-weight:500}
+.nq.flag{background:var(--flag-soft); border-color:var(--flag); color:var(--flag)}
+.nq.cur{outline:2px solid var(--fg); outline-offset:1px}
+.flagbtn[aria-pressed="true"]{background:var(--flag-soft); border-color:var(--flag); color:var(--flag)}
+
+/* ---------- resultados ---------- */
+.score-hero{display:grid; gap:6px; justify-items:center; text-align:center; padding:30px 0 22px}
+.score-hero .big{font-size:64px; font-weight:600; line-height:1; letter-spacing:-.03em}
+.score-hero .verdict{font-size:15px; font-weight:600}
+.score-hero .verdict.ok{color:var(--ok)}
+.score-hero .verdict.bad{color:var(--bad)}
+.bars{display:grid; gap:9px}
+.bar{display:grid; grid-template-columns:150px 1fr 68px; gap:12px; align-items:center; font-size:13.5px}
+.bar .track{height:9px; background:var(--bg-3); border-radius:99px; position:relative; overflow:hidden}
+.bar .fill{height:100%; border-radius:99px; background:var(--accent)}
+.bar .fill.under{background:var(--bad)}
+.bar .goal{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--fg-2); opacity:.55}
+.bar .val{text-align:right; font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--fg-2)}
+.rev{display:grid; gap:10px}
+.revq{border:1px solid var(--line); border-left:3px solid var(--bad); border-radius:var(--r); background:var(--bg-2); padding:14px 16px}
+.revq.ok{border-left-color:var(--ok)}
+.revq .q{font-family:"Source Serif 4",Georgia,serif; font-size:16px; line-height:1.4; margin-bottom:8px}
+.revq .line{font-size:13.5px; color:var(--fg-2); display:flex; gap:8px; align-items:baseline}
+.revq .line b{font-weight:600; color:var(--fg-3); font-size:11px; letter-spacing:.07em; text-transform:uppercase; flex:none; width:66px}
+.revq .e{margin-top:8px; font-size:13.5px; color:var(--fg-2); line-height:1.45; border-top:1px solid var(--line); padding-top:8px}
+.empty{color:var(--fg-3); font-size:14px; padding:18px; text-align:center; border:1px dashed var(--line); border-radius:var(--r)}
+
+.hidden{display:none !important}
+@media (max-width:640px){
+  .hero{grid-template-columns:1fr; align-items:start}
+  .countdown{text-align:left; justify-items:start}
+  .day{grid-template-columns:auto 52px 1fr; gap:10px; padding:11px}
+  .bar{grid-template-columns:96px 1fr 60px; gap:8px; font-size:12.5px}
+  .qtext{font-size:19px}
+  .qbar-in,.qfoot-in{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+
+<!-- ===================== PANEL ===================== -->
+<div id="panel">
+<header class="top"><div class="top-in">
+  <div class="brand"><b>Idoneidad CNV</b><span>60 preguntas · 45 minutos · se aprueba con 42</span></div>
+  <div class="top-right"><button class="btn btn-s" id="themeBtn">Tema</button></div>
+</div></header>
+
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <h1>Estudiar respondiendo,<br>no leyendo.</h1>
+      <p class="sub">Todo el banco sale de la Guía de Estudio de la CNV, que es la única fuente que la CNV toma como respuesta correcta. Elegí un módulo para practicar, o entrá al simulacro cronometrado.</p>
+    </div>
+    <div class="countdown">
+      <span class="eyebrow">Faltan</span>
+      <span class="n mono" id="cdN">—</span>
+      <input type="date" id="examDate" aria-label="Fecha del examen">
+    </div>
+  </div>
+
+  <section style="margin-top:26px">
+    <div class="sec-head"><h2>Práctica por módulo</h2><span class="note">10 preguntas al azar, con corrección y explicación en el momento.</span></div>
+    <div class="grid cards" id="modCards"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Simulacros</h2><span class="note">60 preguntas (10 por módulo), 45 minutos, sin corrección hasta el final. Semana 4 del plan.</span></div>
+    <div class="grid cards" id="simCards"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Puntajes</h2><span class="note">Se completan solos al terminar cada simulacro.</span></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Simulacro</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th><th>M6</th><th>Total</th><th>Tiempo</th></tr></thead>
+      <tbody id="scoreBody"></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Lista de errores</h2><span class="note">Cada pregunta que fallás entra acá. Sale cuando la respondés bien en el repaso.</span></div>
+    <div class="grid cards"><button class="card" id="errCard">
+      <span class="tag warn" id="errTag">0 preguntas</span>
+      <h3>Repasar errores</h3>
+      <p class="desc">Sólo lo que fallaste, con la explicación de por qué la respuesta correcta es la correcta.</p>
+      <span class="meta" id="errMeta">Nada pendiente todavía</span>
+    </button></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Plan de 4 semanas</h2><span class="note">Marcá cada día cumplido. Un día de 15 minutos también cuenta.</span></div>
+    <div class="weeks" id="weekTabs" role="tablist"></div>
+    <div class="days" id="dayList"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Las reglas</h2></div>
+    <div class="rules">
+      <div class="rule"><h4>Día mínimo</h4><p>Si el día se pudrió, hacés un solo bloque de 15 minutos y lo marcás como cumplido. No es trampa: es lo que evita que abandones.</p></div>
+      <div class="rule"><h4>Dos días</h4><p>Podés tener un día en cero. Nunca dos seguidos. Es la única regla innegociable.</p></div>
+      <div class="rule"><h4>Arranque</h4><p>No decidís si tenés ganas. Abrís, ponés timer de 25 y empezás. Las ganas aparecen a los 4 minutos, no antes.</p></div>
+      <div class="rule"><h4>El día del examen</h4><p>45 segundos por pregunta, dos pasadas. Si a los 15 segundos no te suena, la marcás y seguís. No dejes nada en blanco: no hay penalización por error.</p></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div id="quiz" class="hidden">
+  <header class="qbar"><div class="qbar-in">
+    <button class="btn btn-s" id="exitBtn">Salir</button>
+    <span class="lbl" id="quizTitle"></span>
+    <div class="top-right"><span class="clock mono hidden" id="clock">45:00</span></div>
+  </div></header>
+  <div class="prog"><i id="progFill" style="width:0%"></i></div>
+  <div class="qwrap">
+    <div class="qmeta"><span class="mod-tag" id="qMod"></span><span class="qnum" id="qNum"></span></div>
+    <div class="qtext" id="qText"></div>
+    <div class="opts" id="qOpts"></div>
+    <div id="qExpl"></div>
+  </div>
+  <div class="qfoot"><div class="qfoot-in" id="qFoot"></div></div>
+</div>
+
+<!-- ===================== RESULTADO ===================== -->
+<div id="result" class="hidden">
+  <header class="top"><div class="top-in">
+    <div class="brand"><b>Resultado</b><span id="resTitle"></span></div>
+    <div class="top-right"><button class="btn btn-s" id="backBtn">Volver al panel</button></div>
+  </div></header>
+  <div class="wrap" style="max-width:760px">
+    <div class="score-hero">
+      <span class="eyebrow">Correctas</span>
+      <span class="big mono" id="resBig">0</span>
+      <span class="verdict" id="resVerdict"></span>
+      <span class="note mono" id="resTime" style="font-size:13px;color:var(--fg-3)"></span>
+    </div>
+    <section style="margin-top:8px">
+      <div class="sec-head"><h2>Por módulo</h2><span class="note">La línea marca tu meta del plan.</span></div>
+      <div class="bars" id="resBars"></div>
+    </section>
+    <section>
+      <div class="sec-head"><h2>Repaso</h2><span class="note" id="revNote"></span></div>
+      <div class="rev" id="resRev"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+"use strict";
+var B=[];
+B.push(
+{id:"M1-01",m:1,q:"¿Cuál es el objetivo principal de la Ley 26.831?",o:["Fijar el precio de los valores negociables listados","Regular, supervisar y fiscalizar el mercado de capitales","Garantizar un rendimiento mínimo al inversor minorista","Administrar el sistema previsional argentino"],a:1,e:"La 26.831 es la Ley de Mercado de Capitales: regula, supervisa y fiscaliza. Nunca garantiza precios ni rentabilidad.",r:"M1 · P1"},
+{id:"M1-02",m:1,q:"¿Qué organismo es la autoridad de aplicación de la Ley 26.831?",o:["El Banco Central de la República Argentina","La Unidad de Información Financiera","La Comisión Nacional de Valores","El Ministerio de Economía"],a:2,e:"La CNV es la autoridad de aplicación de la Ley de Mercado de Capitales. La UIF lo es de la Ley 25.246 (lavado).",r:"M1 · P2"},
+{id:"M1-03",m:1,q:"¿Cuál de las siguientes NO es una facultad de la Comisión Nacional de Valores?",o:["Garantizar la rentabilidad de los inversores","Llevar el registro de los agentes","Dictar normas reglamentarias","Aplicar sanciones previo sumario"],a:0,e:"La CNV protege al inversor y fiscaliza, pero jamás garantiza resultados económicos. Clásico distractor de examen.",r:"M1 · P3"},
+{id:"M1-04",m:1,q:"¿Qué principio rige la adquisición de acciones propias por parte de una emisora?",o:["Prioridad del accionista controlante","Trato igualitario entre todos los accionistas","Preferencia de los accionistas con más antigüedad","Libre discrecionalidad del directorio"],a:1,e:"Toda recompra de acciones propias debe respetar el trato igualitario entre accionistas.",r:"M1 · P4"},
+{id:"M1-05",m:1,q:"¿Qué documento debe presentar una emisora para solicitar la autorización de oferta pública?",o:["El acta de directorio","La memoria anual","El prospecto","El código de gobierno societario"],a:2,e:"El prospecto es el documento básico que se acompaña al solicitar el ingreso a la oferta pública.",r:"M1 · P5 y P33"},
+{id:"M1-06",m:1,q:"¿Cuál es el plazo mínimo para aceptar una OPA una vez publicada?",o:["5 días hábiles","10 días hábiles","20 días hábiles","30 días corridos"],a:1,e:"El plazo de aceptación de una OPA nunca puede ser menor a 10 días hábiles.",r:"M1 · P6 y P26"},
+{id:"M1-07",m:1,q:"¿Qué sucede si una oferta pública se realiza sin autorización de la CNV?",o:["Se considera oferta irregular","Queda convalidada si se informa dentro de las 48 horas","Es válida si se dirige sólo a inversores calificados","Debe ser autorizada por el mercado donde se liste"],a:0,e:"Sin autorización previa de la CNV, la oferta es irregular y expone a sanciones.",r:"M1 · P7 y P20"},
+{id:"M1-08",m:1,q:"¿Qué es la DUVA según la Ley 26.831?",o:["Declaración Única de Valores Admitidos","Declaración Unilateral de Adquisición","Documento Unificado de Valuación de Activos","Dictamen Único de Valuación Accionaria"],a:1,e:"DUVA: Declaración Unilateral de Voluntad de Adquisición. Se usa en el régimen de participaciones residuales.",r:"M1 · P8"},
+{id:"M1-09",m:1,q:"¿Cuál es la sanción máxima prevista por la Ley 26.831 para incumplimientos graves?",o:["Multa hasta el doble del beneficio obtenido","Multa hasta el triple del beneficio obtenido","Multa hasta el quíntuplo del beneficio obtenido","Multa hasta el décuplo del beneficio obtenido"],a:2,e:"El tope es el quíntuplo (5 veces) del beneficio obtenido o del perjuicio ocasionado.",r:"M1 · P9"},
+{id:"M1-10",m:1,q:"Según las Normas CNV (N.T. 2013), ¿qué se entiende por PyME CNV a los efectos del acceso al mercado de capitales?",o:["La que factura menos de un millón de UVA por año","La que cuenta con Certificado MiPyME e inscripción en el Registro de Empresas MiPyME (Ley 24.467)","La que tiene menos de 50 empleados registrados","La que no cotiza acciones en ningún mercado"],a:1,e:"PyME CNV = Certificado MiPyME vigente + inscripción en el Registro a cargo de la autoridad de aplicación de la Ley 24.467 (SEPyME).",r:"M1 · P10, P32 y P61"},
+{id:"M1-11",m:1,q:"¿Qué constituye oferta pública según la Ley 26.831?",o:["Toda venta de acciones entre dos sociedades anónimas","La invitación a personas en general o a grupos o sectores determinados para negociar valores negociables, por publicaciones, medios electrónicos, volantes, telefonía, TV o afiches","Únicamente la colocación primaria realizada en un mercado autorizado","Sólo la oferta dirigida a inversores calificados"],a:1,e:"La clave es el medio de difusión masiva y la indeterminación del destinatario, la haga el emisor o un intermediario.",r:"M1 · P11 y P36"},
+{id:"M1-12",m:1,q:"¿Cuál es la función del Tribunal Arbitral según la Ley 26.831?",o:["Resolver controversias entre participantes del mercado","Aplicar las sanciones que dispone la CNV","Autorizar las ofertas públicas de adquisición","Homologar los prospectos de emisión"],a:0,e:"El tribunal arbitral de los mercados resuelve controversias entre participantes; no sanciona ni autoriza.",r:"M1 · P13"},
+{id:"M1-13",m:1,q:"¿Qué plazo tiene la emisora para informar a la CNV la designación de autoridades?",o:["24 horas","5 días hábiles","10 días hábiles","30 días corridos"],a:2,e:"10 días hábiles. No confundir con el hecho relevante, que se informa en forma inmediata.",r:"M1 · P15"},
+{id:"M1-14",m:1,q:"¿Qué sucede si una emisora no coloca los valores autorizados en el plazo previsto?",o:["Debe abonar una multa equivalente al 1% del monto","La CNV cancela la autorización de oferta pública","El mercado suspende el listado por 90 días","Se prorroga automáticamente por un año"],a:1,e:"Vencido el plazo sin colocación, la CNV cancela la autorización otorgada.",r:"M1 · P16"},
+{id:"M1-15",m:1,q:"¿Qué plazo tiene la CNV para resolver la solicitud de autorización de una OPA?",o:["10 días hábiles","15 días hábiles","20 días hábiles","30 días hábiles"],a:2,e:"20 días hábiles, el mismo plazo que tiene para objetar el precio equitativo.",r:"M1 · P18 y P29"},
+{id:"M1-16",m:1,q:"¿Qué sucede si el oferente incumple la obligación de formular una OPA?",o:["La CNV dispone la subasta de las participaciones adquiridas","Se le aplica una inhabilitación automática de 5 años","La operación queda sin efecto de pleno derecho","El mercado retiene los valores hasta que regularice"],a:0,e:"La consecuencia típica del incumplimiento del deber de OPA es la subasta de las participaciones adquiridas.",r:"M1 · P19"},
+{id:"M1-17",m:1,q:"¿Qué condición deben cumplir los aportes irrevocables a cuenta de futuras emisiones?",o:["Estar garantizados por una entidad financiera","Tener contrapartida en un rubro de alta liquidez","Ser aprobados por la CNV antes de su integración","Representar como máximo el 10% del capital social"],a:1,e:"Deben tener contrapartida en un rubro de alta liquidez, y capitalizarse en asamblea dentro de los 6 meses.",r:"M1 · P21 y P22"},
+{id:"M1-18",m:1,q:"¿Qué plazo tiene la emisora para tratar en asamblea la capitalización de aportes irrevocables?",o:["3 meses","6 meses","12 meses","Hasta la próxima asamblea ordinaria"],a:1,e:"6 meses desde la aceptación del aporte.",r:"M1 · P22"},
+{id:"M1-19",m:1,q:"¿Qué plazo tiene el oferente para publicar el prospecto de una OPA luego de su aprobación?",o:["Inmediatamente","5 días hábiles","10 días hábiles","20 días hábiles"],a:1,e:"5 días hábiles para publicar el prospecto; 10 días hábiles es el plazo mínimo de aceptación.",r:"M1 · P25"},
+{id:"M1-20",m:1,q:"¿Qué norma regula las Obligaciones Negociables en Argentina?",o:["Ley 24.083","Ley 23.576","Ley 24.441","Ley 27.440"],a:1,e:"Ley 23.576 = ON. 24.083 = FCI, 24.441 = fideicomisos, 27.440 = financiamiento productivo.",r:"M1 · P27"},
+{id:"M1-21",m:1,q:"¿Qué sucede si una emisora decide retirarse del régimen de oferta pública?",o:["Debe formular una OPA por el total de acciones","Basta con notificar a la CNV con 30 días de anticipación","Debe rescatar las acciones a valor libro","Debe fusionarse con otra emisora listada"],a:0,e:"El retiro obliga a formular OPA por la totalidad de las acciones (OPA por retiro).",r:"M1 · P30"},
+{id:"M1-22",m:1,q:"Un Emisor Frecuente, con Registro vigente y Prospecto actualizado en la AIF, ¿cuándo debe informar la intención de una nueva emisión?",o:["Con 10 días hábiles de anticipación","Con 48 horas de anticipación","No debe informarlo previamente a la CNV mientras mantenga su condición y documentación actualizada","Sólo si supera el 20% del monto del programa"],a:2,e:"Ese es justamente el beneficio del régimen de Emisor Frecuente, que además no requiere ratificación periódica.",r:"M1 · P31 y P84"},
+{id:"M1-23",m:1,q:"El registro de accionistas de una sociedad emisora está a cargo de:",o:["La CNV exclusivamente","El mercado donde listan las acciones","La propia emisora, bancos o Caja de Valores","Un escribano público designado por la asamblea"],a:2,e:"Puede llevarlo la propia emisora, un banco o la Caja de Valores (agente de depósito colectivo).",r:"M1 · P41"},
+{id:"M1-24",m:1,q:"Las acciones preferidas con preferencia patrimonial:",o:["Nunca otorgan derecho de voto","Tendrán derecho de voto si la sociedad está en mora en pagar los beneficios que constituyen su preferencia","Votan siempre con voto múltiple","Se convierten automáticamente en ordinarias a los 5 años"],a:1,e:"La mora en el pago de la preferencia devuelve el voto a las preferidas.",r:"M1 · P42"},
+{id:"M1-25",m:1,q:"Una vez en el régimen de oferta pública por acciones:",o:["Pueden emitirse acciones de voto múltiple con autorización de la asamblea","No pueden emitirse acciones ordinarias con voto privilegiado, salvo en casos de ajuste de capital","Todas las acciones deben ser preferidas","El voto plural requiere aprobación de la CNV"],a:1,e:"Prohibición del voto plural en oferta pública, con la excepción del ajuste de capital.",r:"M1 · P43"},
+{id:"M1-26",m:1,q:"La colocación primaria de valores negociables deberá efectuarse mediante:",o:["Negociación bilateral entre agentes","Formación de libro o subasta o licitación pública","Venta directa del emisor a inversores calificados","Adjudicación proporcional entre los accionistas"],a:1,e:"Book building (formación de libro) o subasta/licitación pública. Vale para valores negociables y también para valores fiduciarios.",r:"M1 · P44"},
+{id:"M1-27",m:1,q:"En una OPA, el oferente debe contar con una garantía emitida por:",o:["Cualquier sociedad con patrimonio neto suficiente","Entidades financieras locales o extranjeras con sucursal o representación permanente en el país, o compañías de seguros fiscalizadas por la SSN, previa autorización de la CNV","El mercado donde listan las acciones","La Caja de Valores"],a:1,e:"Entidades financieras (locales o extranjeras con presencia permanente) o aseguradoras SSN, siempre con autorización previa de la CNV.",r:"M1 · P45"},
+{id:"M1-28",m:1,q:"La negociación de Cheques de Pago Diferido avalados emitidos por una PyME requiere:",o:["El aval de una SGR para su negociación en el mercado","La calificación de riesgo de un ACR","El endoso del banco girado","Autorización expresa de la CNV para cada cheque"],a:0,e:"En el segmento avalado interviene una Sociedad de Garantía Recíproca, cuyo objeto es otorgar garantías a sus socios partícipes.",r:"M1 · P46 y P52"},
+{id:"M1-29",m:1,q:"LA VIÑA S.A. pide ingresar a la oferta pública para emitir acciones y tiene patrimonio neto negativo. ¿Qué responde?",o:["No puede ingresar: el patrimonio neto positivo es requisito excluyente","La CNV autoriza el ingreso en la medida en que los riesgos de la emisora estén explicados en el prospecto","Puede ingresar sólo bajo el régimen PyME CNV Garantizada","Debe primero capitalizar y recién luego solicitar el ingreso"],a:1,e:"La CNV no evalúa la conveniencia económica: exige transparencia. Con los factores de riesgo explicados en el prospecto, autoriza.",r:"M1 · P48"},
+{id:"M1-30",m:1,q:"Las personas jurídicas sujetas a control societario de la CNV deben solicitar la inscripción registral de:",o:["Los miembros del Directorio","Todos los apoderados con firma","Los accionistas con más del 5%","Los gerentes de primera línea"],a:0,e:"La designación y cesación de directores se publica en el Boletín Oficial y se inscribe ante la CNV.",r:"M1 · P50 y P99"},
+{id:"M1-31",m:1,q:"Los responsables por la información contenida en el Prospecto son:",o:["Únicamente el emisor","Únicamente el directorio y la comisión fiscalizadora","Los emisores, los oferentes, quienes lo firmen y los expertos o terceros que opinen sobre partes del Prospecto","El agente colocador y el mercado donde se liste"],a:2,e:"La responsabilidad es amplia: emisor, oferentes, firmantes y expertos, cada uno por la parte que le toca.",r:"M1 · P55"},
+{id:"M1-32",m:1,q:"Los valores negociables comprendidos en el régimen PyME CNV:",o:["Pueden ser adquiridos por cualquier inversor","Sólo pueden ser adquiridos por inversores calificados dentro de las categorías de las Normas CNV","Sólo pueden negociarse en el segmento bilateral","Requieren calificación de riesgo obligatoria"],a:1,e:"El régimen PyME CNV está reservado a inversores calificados, por su menor exigencia informativa.",r:"M1 · P56"},
+{id:"M1-33",m:1,q:"Al alcanzar el 95% de las acciones de una sociedad admitida al régimen de oferta pública, ante intimación del minoritario, corresponde:",o:["Que la sociedad se retire automáticamente del régimen","Que la controlante lance una Declaración Unilateral de Voluntad de Adquisición (DUVA)","Que la CNV fije el precio de rescate","Que el minoritario acepte el último precio de mercado"],a:1,e:"Régimen de participaciones residuales: al 95%, el minoritario puede intimar y la controlante debe lanzar la DUVA.",r:"M1 · P65"},
+{id:"M1-34",m:1,q:"¿Qué es un CEDEAR?",o:["Un certificado de depósito de valores extranjeros que se negocia en el país","Un bono corporativo emitido en el exterior","Un fondo común de inversión cerrado","Un contrato de futuro sobre acciones extranjeras"],a:0,e:"CEDEAR = Certificado de Depósito Argentino: representa valores extranjeros y se negocia localmente.",r:"M1 · P69"},
+{id:"M1-35",m:1,q:"En una Oferta Privada, las invitaciones por emisión pueden efectuarse a un número máximo de:",o:["Quince (15) potenciales inversores no calificados","Treinta y cinco (35) potenciales inversores no calificados","Cincuenta (50) potenciales inversores","No hay límite si son inversores calificados"],a:0,e:"15 potenciales inversores NO calificados para invitar; y como máximo 35 adquirentes en total.",r:"M1 · P74 y P75"},
+{id:"M1-36",m:1,q:"Una emisora planea colocar en Oferta Privada a 28 adquirentes (20 calificados y 8 no calificados). ¿Cumple el límite?",o:["No, porque supera los 15 adquirentes permitidos","Sí, porque no supera 35 adquirentes y los no calificados no exceden 15","No, porque los no calificados no pueden participar","Sí, pero debe informarlo previamente a la CNV"],a:1,e:"Los dos topes se controlan por separado: 35 adquirentes en total y 15 no calificados invitados.",r:"M1 · P126"},
+{id:"M1-37",m:1,q:"A fin de apelar una sanción aplicada por la CNV, el recurso directo se interpone y se funda:",o:["Ante la Cámara Federal en lo Contencioso Administrativo","Ante la propia Comisión Nacional de Valores","Ante el mercado donde opera el sancionado","Ante el Ministerio de Economía"],a:1,e:"Se interpone y funda ante la CNV, dentro de los 10 días hábiles de notificado el acto.",r:"M1 · P87 y P88"},
+{id:"M1-38",m:1,q:"El recurso directo contra una sanción impuesta por la CNV se concederá:",o:["Siempre con efecto suspensivo","Siempre con efecto devolutivo","Con efecto devolutivo, salvo contra la multa, que será con efecto suspensivo","Con efecto suspensivo, salvo la inhabilitación"],a:2,e:"Regla: devolutivo. Excepción: la multa, que se recurre con efecto suspensivo.",r:"M1 · P89"},
+{id:"M1-39",m:1,q:"La prescripción de las acciones nacidas de infracciones a las Leyes 26.831 y 24.083 opera:",o:["A los 2 años","A los 3 años","A los 5 años","A los 6 años de la comisión del hecho"],a:3,e:"6 años. Se interrumpe con la resolución del Directorio que ordena la apertura del sumario y con los actos de procedimiento.",r:"M1 · P92 y P93"},
+{id:"M1-40",m:1,q:"Para que proceda el procedimiento de sumario abreviado, todos los sumariados deberán:",o:["Pagar previamente la multa mínima","Admitir los hechos y reconocer expresamente las conductas infractoras y su responsabilidad","Renunciar a su matrícula ante la CNV","Acreditar que no hubo perjuicio a terceros"],a:1,e:"Requiere reconocimiento expreso. Las sanciones se limitan a multa y/o apercibimiento, con tope de $10.000.000.",r:"M1 · P100, P101 y P102"},
+{id:"M1-41",m:1,q:"Ante una investigación originada por una denuncia, si el denunciante desiste, la CNV:",o:["Archiva las actuaciones sin más trámite","Continuará actuando de oficio hasta finalizar la investigación","Suspende el trámite por 90 días","Deriva el caso al mercado correspondiente"],a:1,e:"La denuncia sólo dispara la actividad: la CNV sigue de oficio aunque el denunciante desista.",r:"M1 · P105"},
+{id:"M1-42",m:1,q:"¿Qué tipo de emisoras pueden adquirir sus propias acciones?",o:["Las sociedades anónimas que hacen oferta pública de acciones","Todas las sociedades bajo control de la CNV","Sólo las PyME CNV Garantizadas","Sólo las emisoras de obligaciones negociables"],a:0,e:"La recompra de acciones propias está prevista para las SA con oferta pública de acciones, respetando el trato igualitario.",r:"M1 · P110"},
+{id:"M1-43",m:1,q:"¿Cuál de los siguientes se considera inversor calificado según la normativa vigente?",o:["Cualquier persona humana con más de 5 años de experiencia bursátil","El Estado Nacional, Provincias, Municipios, Cajas Previsionales y Compañías de Seguros","Todo titular de una cuenta comitente activa","Los idóneos inscriptos en el Registro de la CNV, en todos los casos"],a:1,e:"El listado incluye Estado y entes públicos, cajas previsionales, aseguradoras, reaseguradoras y ART, entre otros.",r:"M1 · P111"},
+{id:"M1-44",m:1,q:"Las emisoras pueden celebrar asambleas de accionistas a distancia:",o:["Siempre que lo decida el directorio por mayoría simple","Siempre que esté previsto en el estatuto y se haya presentado el instructivo ante la CNV","Sólo durante emergencias declaradas por el Poder Ejecutivo","Nunca: la asamblea debe ser presencial"],a:1,e:"Doble requisito: previsión estatutaria + instructivo presentado ante la CNV.",r:"M1 · P113 y P132"},
+{id:"M1-45",m:1,q:"La asamblea ordinaria que trate los asuntos del art. 234 incs. 1º y 2º de la Ley 19.550 deberá celebrarse:",o:["Dentro de los cuatro meses de la fecha de cierre del ejercicio","Dentro de los 70 días corridos del cierre","Dentro de los seis meses del cierre","En cualquier momento del ejercicio siguiente"],a:0,e:"4 meses desde el cierre de ejercicio para la asamblea ordinaria que trata estados contables y destino de resultados.",r:"M1 · P114"},
+{id:"M1-46",m:1,q:"Una emisora hizo tres emisiones bajo OP Automática de Acciones en 12 meses por 2,2, 2,4 y 2,6 millones de UVA. ¿Califica una nueva emisión de 0,5 millones como Mediano Impacto?",o:["Sí, porque cada emisión se computa por separado","Sí, porque 0,5 millones está muy por debajo del tope","No, porque las emisiones se consideran parte de una misma oferta y el total superaría los 7 millones de UVA","No, porque el régimen exige un mínimo de 12 meses entre emisiones"],a:2,e:"7,2 millones acumulados > 7 millones de UVA. Todas las emisiones de los últimos 12 meses se suman como una sola oferta.",r:"M1 · P83 y P125"}
+);
+B.push(
+{id:"M2-01",m:2,q:"¿Cuál es el objetivo principal del lavado de activos?",o:["Evadir el pago de impuestos","Simular la licitud del origen de los fondos","Financiar organizaciones terroristas","Obtener financiamiento a tasas más bajas"],a:1,e:"El lavado busca dar apariencia lícita a fondos de origen delictivo. La evasión puede ser el delito precedente, no el objetivo.",r:"M2 · P1 y P38"},
+{id:"M2-02",m:2,q:"¿Cuál de las siguientes NO es una etapa del lavado de activos?",o:["Colocación","Estratificación","Fiscalización","Integración"],a:2,e:"Las tres etapas GAFI son colocación, estratificación (o diversificación) e integración.",r:"M2 · P2 y P32"},
+{id:"M2-03",m:2,q:"¿Qué diferencia principal existe entre lavado de activos y financiamiento del terrorismo?",o:["El financiamiento del terrorismo puede usar fondos de origen lícito","El lavado siempre involucra efectivo y el terrorismo no","El financiamiento del terrorismo no es delito en Argentina","El lavado no requiere reporte a la UIF"],a:0,e:"Pregunta clásica: en el FT el origen de los fondos puede ser lícito; lo ilícito es el destino.",r:"M2 · P3 y P14"},
+{id:"M2-04",m:2,q:"¿Quién es la autoridad de aplicación de la Ley 25.246?",o:["La CNV","El BCRA","La Unidad de Información Financiera (UIF)","El Ministerio Público Fiscal"],a:2,e:"La UIF es la autoridad de aplicación; la CNV es organismo supervisor sectorial en el mercado de capitales.",r:"M2 · P4 y P49"},
+{id:"M2-05",m:2,q:"¿Qué etapa del lavado implica mover los fondos para ocultar su origen?",o:["Colocación","Estratificación","Integración","Consolidación"],a:1,e:"Colocación = ingreso al sistema. Estratificación = capas de operaciones para borrar el rastro. Integración = uso como si fueran lícitos.",r:"M2 · P18"},
+{id:"M2-06",m:2,q:"¿Cuál es la finalidad de las 40 Recomendaciones del GAFI/FATF?",o:["Establecer estándares internacionales contra el lavado de activos y el financiamiento del terrorismo","Uniformar los estados financieros a nivel global","Regular los mercados de derivados","Fijar sanciones penales mínimas para los países miembros"],a:0,e:"Son el estándar internacional. La Recomendación 1 impone el enfoque basado en riesgo.",r:"M2 · P10, P15 y P56"},
+{id:"M2-07",m:2,q:"La Recomendación 1 del GAFI establece que las medidas de prevención deben basarse en:",o:["El monto de las operaciones","El riesgo","La nacionalidad del cliente","El tipo de instrumento negociado"],a:1,e:"Enfoque basado en riesgo: se asignan recursos y controles según el nivel de riesgo detectado.",r:"M2 · P56"},
+{id:"M2-08",m:2,q:"¿Qué organismo centraliza la recepción de los Reportes de Operaciones Sospechosas?",o:["La CNV","La UIF","El BCRA","El Ministerio de Justicia"],a:1,e:"Los sujetos obligados del mercado de capitales reportan a la UIF, aunque su supervisor sectorial sea la CNV.",r:"M2 · P12 y P61"},
+{id:"M2-09",m:2,q:"¿Qué norma define a las Personas Expuestas Políticamente (PEP)?",o:["Resolución UIF 29/2013","Resolución UIF 78/2023","Resolución UIF 192/2024","Decreto 918/2012"],a:2,e:"PEP = Resolución UIF 192/2024. No confundir con 29/2013 (ROS y congelamiento) ni 78/2023 (mercado de capitales).",r:"M2 · P16 y P67"},
+{id:"M2-10",m:2,q:"¿Qué norma regula la prevención de LA/FT específicamente en el mercado de capitales dentro de las Normas CNV?",o:["Título IV","Título XI","Título XIII","Título XVI"],a:1,e:"Normas CNV, Título XI: prevención del lavado de activos y financiación del terrorismo.",r:"M2 · P27"},
+{id:"M2-11",m:2,q:"¿Cuándo se considera que un hecho u operación es sospechoso?",o:["Cuando supera un monto fijado por la UIF","Cuando la operación, tentada o realizada, por sus características o por no poder justificarse su inusualidad tras el análisis, genera sospecha o motivos razonables de vinculación con LA/FT","Cuando el cliente se niega a firmar el legajo","Cuando interviene un cliente extranjero"],a:1,e:"No hay umbral de monto: lo determinante es la inusualidad no justificada tras el análisis del sujeto obligado.",r:"M2 · P33"},
+{id:"M2-12",m:2,q:"¿Qué se entiende por operación inusual?",o:["Toda operación superior a $10.000.000","Operaciones tentadas o realizadas, con independencia del monto, que carecen de justificación económica y/o jurídica, o no guardan relación con el perfil del cliente, o se desvían de los usos y costumbres del mercado","Cualquier operación realizada por un PEP","La operación que el cliente ordena por medios no convenidos"],a:1,e:"Inusual ≠ sospechosa: la inusual dispara el análisis; si no se justifica, se convierte en sospechosa y se reporta.",r:"M2 · P39"},
+{id:"M2-13",m:2,q:"Al detectarse una operación inusual, la primera medida debe ser:",o:["Reportarla de inmediato a la UIF","Cerrar la cuenta del cliente","Profundizar el análisis para obtener información que corrobore o revierta la inusualidad","Comunicar la situación al cliente para que la explique por escrito"],a:2,e:"Primero se profundiza el análisis. Y en ningún caso se le revela al cliente que está bajo análisis.",r:"M2 · P51 y P50"},
+{id:"M2-14",m:2,q:"El sujeto obligado que analiza una posible operación sospechosa tiene la obligación de:",o:["Notificar al cliente antes de reportar","Abstenerse de revelarla al cliente o a terceros","Suspender toda operatoria del cliente por 30 días","Informar al mercado donde opera"],a:1,e:"Deber de confidencialidad del reporte: nunca se revela al cliente ni a terceros (tipping off).",r:"M2 · P50"},
+{id:"M2-15",m:2,q:"¿Qué plazo rige para reportar operaciones sospechosas de lavado de activos?",o:["El establecido en la Ley 27.739 y en las resoluciones UIF aplicables, en el marco de la Resolución UIF 56/2024","30 días corridos en todos los casos","Al cierre del ejercicio anual","No hay plazo: queda a criterio del oficial de cumplimiento"],a:0,e:"El plazo surge de la Ley 27.739 y de la RG UIF 56/2024 según el tipo de sujeto obligado.",r:"M2 · P36, P45 y P73"},
+{id:"M2-16",m:2,q:"Cuando la operación sospechosa de FT involucra personas o bienes designados por el Consejo de Seguridad de la ONU (Resolución 1267), el reporte debe efectuarse:",o:["Dentro de los 7 días hábiles","Dentro de las 48 horas","Sin demora alguna","Junto con el reporte sistemático mensual"],a:2,e:"Listados ONU: reporte sin demora alguna. Es el único caso con esa exigencia inmediata.",r:"M2 · P37 y P74"},
+{id:"M2-17",m:2,q:"¿Quién establece formalmente los listados de sanciones financieras dirigidas en materia de financiamiento del terrorismo?",o:["El GAFI","El Consejo de Seguridad de las Naciones Unidas","La UIF","La Interpol"],a:1,e:"Las listas (Res. 1267 y sucesivas) las establece el Consejo de Seguridad de la ONU.",r:"M2 · P34"},
+{id:"M2-18",m:2,q:"Recibida la resolución de la UIF que dispone el congelamiento administrativo de bienes (Res. UIF 29/2013), el sujeto obligado dispone de ____ para informar el resultado de su aplicación:",o:["24 horas","10 días hábiles","30 días","60 días"],a:3,e:"60 días para informar el resultado del congelamiento, aunque la medida se aplica de inmediato.",r:"M2 · P62"},
+{id:"M2-19",m:2,q:"¿Durante cuánto tiempo deben conservar los sujetos obligados la documentación de identificación, conocimiento y operaciones del cliente?",o:["5 años desde la operación","10 años desde la finalización de la relación con el cliente","3 años desde el cierre de la cuenta","Hasta la próxima supervisión de la UIF"],a:1,e:"El criterio vigente de la guía: 10 años desde la finalización de la relación con el cliente.",r:"M2 · P60"},
+{id:"M2-20",m:2,q:"Definición de Beneficiario Final (Resolución UIF 112/2021):",o:["El titular registral de la cuenta comitente","La persona humana que posee como mínimo el 10% del capital o de los derechos de voto, o que por otros medios ejerce el control final","El accionista mayoritario, cualquiera sea su porcentaje","El representante legal de la persona jurídica"],a:1,e:"Umbral del 10%, o control final por otros medios. Aplica a sociedades, fideicomisos, fondos y otras estructuras.",r:"M2 · P44"},
+{id:"M2-21",m:2,q:"El capital de una sociedad es de $10.000.000: Socio A $2.000.000, Socio B $300.000, Socio C $7.700.000. ¿Quiénes son beneficiarios finales?",o:["Sólo el Socio C","Socios A y C","Socios A, B y C","Ninguno: no se alcanza el umbral"],a:1,e:"A = 20% y C = 77% superan el 10%. B = 3% no llega.",r:"M2 · P76"},
+{id:"M2-22",m:2,q:"El capital de una sociedad es de $5.000.000: A $250.000, B $500.000, C $2.500.000, D $1.750.000. ¿Quiénes son beneficiarios finales?",o:["Socios C y D","Socios B, C y D","Todos los socios","Sólo el Socio C"],a:1,e:"B = 10% (llega al mínimo), C = 50%, D = 35%. A = 5% queda afuera.",r:"M2 · P81"},
+{id:"M2-23",m:2,q:"Si la matriz de riesgo arroja nivel de riesgo ALTO para un cliente, la debida diligencia a aplicar es:",o:["Simplificada, con actualización cada 5 años","Media, con actualización cada 3 años","Reforzada, con actualización del legajo cada 1 año","La misma que para el resto de los clientes"],a:2,e:"Alto → reforzada, legajo cada 1 año. Medio → media, cada 3 años. Bajo → simplificada, cada 5 años.",r:"M2 · P41, P88 y P89"},
+{id:"M2-24",m:2,q:"Si la matriz de riesgo arroja nivel de riesgo MEDIO, la debida diligencia y la actualización del legajo son:",o:["Media, actualizando el legajo cada 3 años","Media, actualizando el legajo cada 5 años","Reforzada, actualizando cada 2 años","Simplificada, actualizando cada año"],a:0,e:"Riesgo medio: medidas de debida diligencia media y legajo actualizado cada 3 años.",r:"M2 · P41"},
+{id:"M2-25",m:2,q:"En el caso de un cliente extranjero que se declare PEP, el sujeto obligado debe:",o:["Rechazar la apertura de la cuenta","Segmentarlo como de riesgo alto","Aplicar debida diligencia simplificada por tratarse de un funcionario","Reportarlo automáticamente como operación sospechosa"],a:1,e:"Ser PEP no impide operar: obliga a segmentarlo como riesgo alto y aplicar diligencia reforzada.",r:"M2 · P52"},
+{id:"M2-26",m:2,q:"¿Quién puede ser designado Oficial de Cumplimiento en una persona jurídica sujeto obligado?",o:["Cualquier empleado con antigüedad mayor a 5 años","Un miembro del órgano de administración","El auditor externo de la entidad","Un profesional independiente contratado a tal fin"],a:1,e:"Debe ser miembro del órgano de administración (director), por la responsabilidad que implica el cargo.",r:"M2 · P42"},
+{id:"M2-27",m:2,q:"Son obligaciones del Oficial de Cumplimiento:",o:["Aprobar las operaciones de los clientes de riesgo alto","Proponer políticas y controles, atender los requerimientos de la UIF y la CNV, y verificar la aplicación del sistema de prevención incluyendo el monitoreo y el ROS","Auditar los estados contables del sujeto obligado","Definir los activos en los que puede operar cada cliente"],a:1,e:"Propone, evalúa y verifica el sistema PLA/FT. Recomendar activos según riesgo NO es un pilar del programa.",r:"M2 · P31, P40 y P83"},
+{id:"M2-28",m:2,q:"Dos o más sujetos obligados vinculados por una relación de control o pertenecientes a una misma organización societaria:",o:["Deben designar un oficial de cumplimiento por cada entidad","Pueden designar un único Oficial de Cumplimiento titular y suplente, y compartir legajos de clientes","No pueden compartir información por el secreto bursátil","Deben unificar su matriz de riesgo ante la CNV"],a:1,e:"El grupo puede unificar oficial de cumplimiento y compartir legajos.",r:"M2 · P84"},
+{id:"M2-29",m:2,q:"El Comité de Prevención de LA/FT puede estar integrado por:",o:["El Oficial de Cumplimiento y funcionarios del primer nivel gerencial cuyas funciones se vinculen con riesgos de LA/FT","Únicamente directores independientes","El auditor externo y el síndico","Representantes de la UIF y de la CNV"],a:0,e:"Oficial de cumplimiento + primera línea gerencial relacionada con el riesgo LA/FT.",r:"M2 · P85"},
+{id:"M2-30",m:2,q:"La Revisión Externa Independiente en materia de PLA/FT para sujetos obligados del mercado de capitales (Res. UIF 78/2023) debe realizarse al menos:",o:["Una vez al año","Cada dos años","Cada tres años","Sólo cuando lo requiera la UIF"],a:0,e:"Revisión externa independiente: anual. La autoevaluación de riesgo de AN y AAGI puede ser cada dos años.",r:"M2 · P57 y P75"},
+{id:"M2-31",m:2,q:"La Autoevaluación de Riesgo de un sujeto obligado inscripto como Agente de Negociación (Res. UIF 78/2023) podrá realizarse:",o:["Anualmente","Cada dos años","Cada tres años","Sólo al inicio de la actividad"],a:1,e:"Cada dos años, igual que para el Agente Asesor Global de Inversión.",r:"M2 · P54 y P71"},
+{id:"M2-32",m:2,q:"El Informe Técnico de Autoevaluación de Riesgos debe:",o:["Ser aprobado por el órgano de administración o máxima autoridad, conservarse, actualizarse según la normativa y enviarse a la UIF y a la CNV","Ser aprobado por la asamblea de accionistas","Presentarse únicamente ante la CNV","Publicarse en la Autopista de la Información Financiera"],a:0,e:"Aprobación del órgano de administración y envío a UIF y CNV. Lo mismo vale para la declaración de tolerancia al riesgo.",r:"M2 · P55, P76 y P91"},
+{id:"M2-33",m:2,q:"El manual de prevención de LA/FT deberá ser revisado:",o:["Mensualmente","Semestralmente","Anualmente","Cada dos años"],a:2,e:"Revisión anual, accesible y conocido por todo el personal, con evidencia de su difusión y capacitación.",r:"M2 · P48 y P79"},
+{id:"M2-34",m:2,q:"Según la Res. UIF 78/2023, ¿para quiénes deben confeccionarse los legajos?",o:["Sólo para clientes de riesgo alto","Sólo para personas jurídicas","Para todos los clientes","Sólo para clientes que operen por encima de su cupo"],a:2,e:"Legajo para todos los clientes; lo que varía según el riesgo es la profundidad de la diligencia.",r:"M2 · P65"},
+{id:"M2-35",m:2,q:"¿Qué debe contener, entre otros elementos, el legajo del cliente?",o:["La verificación en el Listado de Terroristas y la identificación del perfil tributario, económico, financiero y patrimonial","Únicamente copia del DNI y constancia de CUIT","El detalle de comisiones pactadas","La calificación de riesgo emitida por un ACR"],a:0,e:"Verificación contra listados + perfil del cliente son la base del \"conozca a su cliente\".",r:"M2 · P47"},
+{id:"M2-36",m:2,q:"Se entiende por Cliente, según la Res. UIF 78/2023:",o:["Sólo quien tiene cuenta comitente abierta y activa","Toda persona humana, jurídica o estructura jurídica, nacional o extranjera, con la que se establece de manera ocasional o permanente una relación contractual de carácter financiero, económico o comercial","Quien opera por montos superiores al umbral fijado por la UIF","Únicamente el titular registral de los fondos"],a:1,e:"Incluye la relación ocasional, no sólo la permanente.",r:"M2 · P63"},
+{id:"M2-37",m:2,q:"Según la Res. UIF 3/2014, cuando un sujeto obligado tiene como cliente a otro sujeto obligado deberá:",o:["Aplicar debida diligencia reforzada en todos los casos","Solicitar Declaración Jurada sobre el cumplimiento de las disposiciones vigentes en materia de PLA/FT","Eximirlo de legajo","Reportar la relación a la UIF"],a:1,e:"Se le pide DDJJ de cumplimiento; no queda exento de legajo.",r:"M2 · P64"},
+{id:"M2-38",m:2,q:"Conforme las Normas CNV, ¿cuál de los siguientes NO se considera sujeto obligado en el ámbito del mercado de capitales?",o:["Los Agentes de Negociación","Los Agentes Productores","Los Agentes Asesores Globales de Inversión","Las Plataformas de Financiamiento Colectivo"],a:1,e:"No son sujetos obligados: los Agentes Productores ni los ALyC Participantes Directos.",r:"M2 · P73 y P74"},
+{id:"M2-39",m:2,q:"Los ALyC y los colocadores de FCI deben verificar que los fondos de sus clientes provengan de:",o:["Cualquier cuenta bancaria del país","Cuentas de titularidad o cotitularidad del cliente (CBU/CVU) abiertas en entidades del país autorizadas por el BCRA, que permitan identificación y trazabilidad","Cuentas radicadas en el exterior a nombre del cliente","Efectivo depositado en la sede del agente"],a:1,e:"Trazabilidad: el dinero debe venir de una cuenta del propio cliente en entidad autorizada por el BCRA.",r:"M2 · P75 y P83"},
+{id:"M2-40",m:2,q:"Según las Normas CNV Título XI, los sujetos obligados sólo podrán recibir por cliente y por día fondos en efectivo por un monto que no exceda:",o:["El monto establecido en el artículo 1º de la Ley 25.345","El equivalente a 1.000 UVA","$1.000.000","No pueden recibir efectivo en ningún caso"],a:0,e:"El tope remite al art. 1º de la Ley 25.345 (ley antievasión).",r:"M2 · P43"},
+{id:"M2-41",m:2,q:"¿Quién aplica las sanciones administrativas a los sujetos obligados del mercado de capitales por incumplimientos en materia de PLA/FT?",o:["La CNV","La UIF","El BCRA","El mercado donde opera el agente"],a:1,e:"Trampa frecuente: la CNV supervisa, pero las sanciones administrativas por PLA/FT las aplica la UIF.",r:"M2 · P53 y P72"},
+{id:"M2-42",m:2,q:"Conforme la Resolución UIF 49/2024, se considera Activo Virtual a:",o:["Toda criptomoneda emitida por un banco central","La representación digital de valor que se puede comercializar y/o transferir digitalmente y utilizar para pagos o inversiones","Todo valor negociable listado en un mercado autorizado","Cualquier token emitido en el exterior"],a:1,e:"Definición amplia: representación digital de valor, comercializable/transferible, usada para pagos o inversiones.",r:"M2 · P93 y P79 bis"},
+{id:"M2-43",m:2,q:"Una ONG cliente recibe una donación, compra bonos locales y los transfiere inmediatamente a una cuenta en el exterior. El procedimiento de control es:",o:["Reportar de inmediato sin más análisis","Determinar el origen de la donación y el destino de la cuenta a la que se transfieren los fondos","Bloquear la cuenta hasta que la ONG presente su balance","Consultar a la CNV antes de ejecutar la orden"],a:1,e:"Primero se profundiza: origen y destino. Las ONG son un factor de riesgo típico de FT.",r:"M2 · P69"},
+{id:"M2-44",m:2,q:"A un comitente de riesgo alto con cupo anual de $6.000.000 le ingresan $18.000.000 y declara que provienen de la venta de su automóvil. El ALyC deberá:",o:["Aceptar la explicación verbal y registrarla","Solicitar documentación de respaldo","Reportar automáticamente a la UIF sin análisis previo","Devolver los fondos a la cuenta de origen"],a:1,e:"La declaración del cliente no alcanza: hay que respaldarla documentalmente y recién después decidir si se reporta.",r:"M2 · P98 y P99"},
+{id:"M2-45",m:2,q:"Los Reportes de Operaciones Sospechosas deberán:",o:["Limitarse a los datos de identificación del cliente","Estar fundados y contener una descripción de las razones y/o inusualidades por las que se considera que la operación tiene tal carácter","Ser aprobados previamente por la CNV","Acompañarse de una denuncia penal"],a:1,e:"Un ROS sin fundamentación y sin descripción de la inusualidad es un reporte defectuoso.",r:"M2 · P97"},
+{id:"M2-46",m:2,q:"Para acreditar el requisito de INTEGRIDAD ante los registros de la CNV se debe presentar:",o:["Informe de antecedentes comerciales actualizado","Certificado de antecedentes penales y Declaración Jurada de PLA/FT","Título habilitante y certificado de idoneidad","Estados contables auditados"],a:1,e:"Integridad: antecedentes penales + DDJJ PLA/FT. Solvencia: informe de antecedentes comerciales.",r:"M2 · P77 y P78"},
+{id:"M2-47",m:2,q:"Conforme la Res. UIF 78/2023, ¿qué información debe informarse a la UIF con periodicidad mensual?",o:["El listado de cuentas comitentes diferenciando activas e inactivas, identificando las subcuentas de la cartera propia","El detalle de comisiones cobradas","La nómina de empleados capacitados","El resultado de la autoevaluación de riesgos"],a:0,e:"Régimen informativo mensual: nómina de cuentas comitentes activas/inactivas y, cuando corresponda, transferencias internacionales de VN.",r:"M2 · P68 y P82"}
+);
+B.push(
+{id:"M3-01",m:3,q:"¿Cuál es el objetivo del principio de transparencia en el mercado de capitales?",o:["Asegurar información veraz, suficiente y oportuna para la toma de decisiones","Igualar la rentabilidad entre inversores minoristas e institucionales","Evitar la volatilidad de los precios","Limitar el acceso de los inversores minoristas a instrumentos complejos"],a:0,e:"Transparencia = información veraz, suficiente y oportuna para que el inversor decida.",r:"M3 · P1"},
+{id:"M3-02",m:3,q:"¿Cuáles son las conductas contrarias a la transparencia en el ámbito de la oferta pública?",o:["La demora en la presentación de estados contables","El abuso de información privilegiada, la manipulación y el engaño al mercado","La falta de pago de aranceles al mercado","El incumplimiento del régimen informativo periódico"],a:1,e:"Las tres grandes: abuso de información privilegiada (insider trading), manipulación y engaño.",r:"M3 · P31 y P40"},
+{id:"M3-03",m:3,q:"El plexo normativo de Transparencia en el ámbito de la Oferta Pública resulta oponible a:",o:["Sólo a las emisoras y sus directores","Sólo a los agentes registrados ante la CNV","Cualquier persona humana o jurídica que intervenga en el mercado de capitales, incluidos los inversores","Únicamente a quienes tengan información privilegiada"],a:2,e:"Alcanza a todos los que intervienen en el mercado, inversores incluidos.",r:"M3 · P36"},
+{id:"M3-04",m:3,q:"¿Qué plazo tiene un sujeto regulado para informar un hecho relevante?",o:["En forma inmediata, por la Autopista de la Información Financiera","Dentro de los 5 días hábiles","Dentro de los 10 días hábiles","Con la presentación de los estados contables trimestrales"],a:0,e:"Hecho relevante: inmediato y por AIF. Los 10 días hábiles son para la designación de autoridades.",r:"M3 · P56, P83 y P101"},
+{id:"M3-05",m:3,q:"¿Qué se considera un hecho relevante?",o:["Toda decisión del directorio, cualquiera sea su alcance","Todo hecho o situación que, por su importancia, sea apto para afectar en forma sustancial la colocación de los valores negociables, el curso de su negociación o el desenvolvimiento de la actividad del sujeto alcanzado","Sólo los cambios en el capital social","Sólo los hechos que la CNV requiera expresamente"],a:1,e:"El criterio es la aptitud del hecho para afectar sustancialmente la colocación, la negociación o la actividad.",r:"M3 · P82"},
+{id:"M3-06",m:3,q:"La normativa ejemplifica como hechos relevantes sujetos al deber de informar:",o:["Los cambios en el objeto social, alteraciones de importancia en las actividades y las pérdidas superiores al 15% del patrimonio neto","Cualquier variación del precio de la acción mayor al 5%","La renuncia de cualquier empleado jerárquico","El cambio de auditor externo únicamente"],a:0,e:"También: despidos que representen el 10% del personal y hechos fortuitos que obstaculicen seriamente la actividad.",r:"M3 · P79 y P55"},
+{id:"M3-07",m:3,q:"¿Qué órgano debe designar un Responsable de Relaciones con el Público Inversor?",o:["La asamblea de accionistas","El órgano de administración de la emisora","La comisión fiscalizadora","El mercado donde listan los valores"],a:1,e:"Lo designa el órgano de administración (directorio).",r:"M3 · P5"},
+{id:"M3-08",m:3,q:"El Responsable de Relaciones con el Público (RRP) del Agente deberá:",o:["Aprobar las órdenes de los clientes de riesgo alto","Atender los reclamos y denuncias, informarlos al órgano de administración y remitir el detalle dentro de los 5 días hábiles de recibido cada uno, con actualizaciones semanales hasta su cierre","Reportar las operaciones sospechosas a la UIF","Auditar el cumplimiento del código de conducta"],a:1,e:"5 días hábiles para el detalle inicial por AIF y actualizaciones semanales hasta el cierre del reclamo.",r:"M3 · P69, P94 y P102"},
+{id:"M3-09",m:3,q:"Las denuncias ante la CNV:",o:["Deben presentarse siempre con identificación del denunciante","Pueden formularse de manera anónima y/o con individualización de quien denuncia","Requieren patrocinio letrado obligatorio","Sólo pueden ser presentadas por inversores con cuenta comitente"],a:1,e:"Se admiten anónimas. Y el denunciante no es parte del procedimiento sancionador.",r:"M3 · P41 y P50"},
+{id:"M3-10",m:3,q:"Quien formula una denuncia ante la CNV:",o:["Es parte del proceso sancionador y puede tomar vista del expediente","No es parte del proceso sancionador y no puede tomar vista del expediente","Puede apelar la resolución final","Debe ratificar la denuncia cada 60 días"],a:1,e:"El denunciante no es parte. El denunciado tampoco lo es hasta la formulación de cargos; recién ahí toma vista y ejerce su defensa.",r:"M3 · P50"},
+{id:"M3-11",m:3,q:"El denunciante será notificado:",o:["De cada paso del procedimiento","De la decisión final","Sólo si se instruye sumario","Nunca, por el carácter reservado de la investigación"],a:1,e:"Se le notifica la decisión final de su denuncia.",r:"M3 · P107 (MI)"},
+{id:"M3-12",m:3,q:"Las investigaciones en el ámbito de la CNV pueden iniciarse:",o:["Sólo a petición de un particular","Sólo de oficio","A petición de un particular o de oficio, e incluso a partir de informaciones periodísticas","Únicamente por denuncia de un mercado o cámara compensadora"],a:2,e:"Denuncia, oficio o información periodística de la que surjan presuntas irregularidades.",r:"M3 · P43 y P108 (MI)"},
+{id:"M3-13",m:3,q:"Toda persona sujeta a un procedimiento de investigación o inspección de la CNV:",o:["Puede negarse a declarar sin consecuencias","Deberá proveer toda la información y documentación que la CNV le requiera","Sólo responde ante requerimiento judicial","Puede exigir que el requerimiento se curse por el mercado"],a:1,e:"Deber de colaboración: la conducta renuente y reiterada es un elemento de convicción en contra al decidir la apertura del sumario.",r:"M3 · P35, P38 y P53"},
+{id:"M3-14",m:3,q:"Ante el requerimiento de comparecencia de un investigado que no es abogado, éste:",o:["Debe concurrir obligatoriamente con patrocinio letrado","Podrá decidir concurrir con o sin asistencia letrada","No puede concurrir con abogado","Debe designar un apoderado matriculado en la CNV"],a:1,e:"La asistencia letrada es optativa en la comparecencia.",r:"M3 · P34"},
+{id:"M3-15",m:3,q:"A los efectos de graduar la sanción por abuso de información privilegiada o manipulación, la CNV considerará como agravante que la conducta haya sido realizada por:",o:["Un inversor minorista con cuenta activa","El accionista de control, o administradores, gerentes y síndicos de las personas sujetas a su fiscalización","Un agente productor","Un empleado sin funciones jerárquicas"],a:1,e:"La cercanía al control y a la administración agrava la sanción.",r:"M3 · P32 y P33"},
+{id:"M3-16",m:3,q:"¿Cuál de las siguientes NO se considera abuso de información privilegiada por parte de un director de la emisora?",o:["Comprar acciones antes de que se publique el balance","La comunicación de la información a terceros en el ejercicio normal de su cargo","Recomendar a un amigo la compra basándose en el dato reservado","Vender su tenencia conociendo una pérdida no divulgada"],a:1,e:"La comunicación en el ejercicio normal del cargo está excluida; todo lo demás es abuso.",r:"M3 · P48"},
+{id:"M3-17",m:3,q:"Quienes por su cargo o actividad conozcan un hecho no divulgado apto para afectar la colocación o negociación de valores deben guardar estricta reserva:",o:["Durante 30 días","Hasta que la información tenga carácter público","Hasta el cierre del ejercicio","Hasta que lo autorice el mercado"],a:1,e:"La reserva se mantiene hasta que la información se hace pública.",r:"M3 · P51"},
+{id:"M3-18",m:3,q:"El deber de reserva sobre información no divulgada alcanza, entre otros, a:",o:["Sólo a los directores de la emisora","Directores, administradores, gerentes, síndicos, accionistas controlantes y profesionales intervinientes, a quien formule una OPA, a los agentes de calificación de riesgo y a los funcionarios de los organismos de control, incluida la CNV","Sólo a los agentes registrados","Sólo a los auditores externos"],a:1,e:"El círculo de obligados es muy amplio e incluye a los propios funcionarios de la CNV.",r:"M3 · P76"},
+{id:"M3-19",m:3,q:"Resultan susceptibles de calificarse como engaños al mercado:",o:["Las operaciones en las que no se produce, más allá de su apariencia, la transferencia de los valores, y aquellas hechas para crear una apariencia falsa de oferta y demanda aunque la transferencia se produzca","Sólo las operaciones simuladas sin transferencia real","Sólo las operaciones que producen variaciones de precio superiores al 10%","Las operaciones realizadas fuera del horario de rueda"],a:0,e:"Ambas modalidades: con o sin transferencia efectiva, si el propósito es aparentar un mercado activo.",r:"M3 · P47 y P58"},
+{id:"M3-20",m:3,q:"La oferta pública de valores negociables será irregular cuando:",o:["Sea efectuada por sujetos no autorizados por la CNV, o cuando bajo el ropaje de una oferta privada se utilicen medios de comunicación masivos para su difusión","Sólo cuando se coloque por debajo del valor nominal","Sólo cuando no se publique el prospecto en la AIF","Cuando se dirija a inversores calificados del exterior"],a:0,e:"Dos supuestos: falta de autorización o difusión masiva disfrazada de oferta privada.",r:"M3 · P39 y P52"},
+{id:"M3-21",m:3,q:"Puede efectuar una invitación al público en general para comprar y vender valores negociables:",o:["Cualquier persona con conocimientos acreditados","Sólo quienes previamente hayan obtenido autorización de la CNV","Cualquier sociedad anónima inscripta en el Registro Público","Los idóneos, aun sin estar vinculados a un agente"],a:1,e:"Se requiere autorización previa; quien no la tiene comete oferta irregular.",r:"M3 · P49"},
+{id:"M3-22",m:3,q:"Según la RG 1002/2024, ¿cuál de las siguientes es una conducta contraria a la transparencia?",o:["Publicar el prospecto fuera de plazo","Ofrecer servicios de asesoramiento en valores negociables sin contar con la categoría de Agente habilitada por la CNV","Cobrar comisiones superiores a las del mercado","Operar en el segmento bilateral"],a:1,e:"También se prohíbe difundir o captar clientes para agentes registrados sin estar autorizado.",r:"M3 · P57, P99 y P100"},
+{id:"M3-23",m:3,q:"Los domicilios especiales constituidos ante la CNV por los directores de sociedades en oferta pública tienen validez:",o:["Hasta la cesación del cargo","Hasta DOS (2) años después de que cesan en sus cargos","Hasta CINCO (5) años después de la cesación","Indefinidamente"],a:1,e:"2 años posteriores al cese en el cargo.",r:"M3 · P44"},
+{id:"M3-24",m:3,q:"Los mercados y las cámaras compensadoras, respecto de las faltas en que incurran sus agentes miembros:",o:["Deben denunciarlas ante la CNV siempre","Sólo deben denunciarlas si generan perjuicio a inversores","Deben resolverlas internamente sin intervención de la CNV","Deben informarlas anualmente en un reporte agregado"],a:0,e:"Deber de denuncia sin excepciones, además de las amplias tareas de inspección y control a su cargo.",r:"M3 · P45 y P54"},
+{id:"M3-25",m:3,q:"Sobre publicidad y propaganda en el ámbito de la oferta pública:",o:["La CNV no tiene competencia sobre la publicidad de los agentes","La publicidad no debe inducir a error sobre naturaleza, precios, rentabilidad o garantías, y ante una violación la CNV puede ordenar su modificación o suspensión además de aplicar sanciones","Basta con incluir una leyenda de riesgo al pie","Sólo se controla la publicidad de FCI"],a:1,e:"Control pleno: modificación, suspensión y sanciones.",r:"M3 · P71"},
+{id:"M3-26",m:3,q:"La publicidad para promoción y comercialización de un Fondo no podrá dirigirse de forma específica y/o exclusiva a menores de edad. Esta afirmación es:",o:["Verdadera","Falsa","Verdadera sólo para fondos de renta variable","Falsa: no existe regulación sobre publicidad de FCI"],a:0,e:"Verdadera: debe garantizarse idéntico contenido e información a todo el público inversor.",r:"M3 · P91"},
+{id:"M3-27",m:3,q:"¿Qué aspectos mínimos debe abarcar el Código de Protección al Inversor o Código de Conducta de los registrados?",o:["Sólo las normas de prevención de lavado","La normativa de transparencia y las conductas contrarias a ella, las normas de protección al inversor y los derechos de los minoristas, y las disposiciones sobre conducta del personal, confidencialidad y conflictos de interés","Únicamente el régimen de comisiones","El organigrama y las funciones de cada área"],a:1,e:"Tres bloques: transparencia, protección al inversor y comportamiento del personal.",r:"M3 · P75"},
+{id:"M3-28",m:3,q:"¿Qué obligación tienen los participantes respecto del Código de Conducta Profesional?",o:["Actuar con lealtad, diligencia y transparencia frente a clientes y empleadores","Priorizar el interés del empleador sobre el del cliente","Reportar mensualmente su cumplimiento a la CNV","Suscribirlo ante escribano público"],a:0,e:"Lealtad, diligencia y transparencia, tanto con clientes como con empleadores.",r:"M3 · P7 y P17"},
+{id:"M3-29",m:3,q:"La Oficina de Atención al Inversor (OAI) de la CNV:",o:["Resuelve arbitralmente los conflictos entre inversores y agentes","Promueve la educación sobre el mercado de capitales, atiende consultas del público y difunde recomendaciones y advertencias de la CNV y de otros reguladores como IOSCO y ESMA","Autoriza las ofertas públicas","Fiscaliza a los auditores externos"],a:1,e:"Educación, consultas y difusión de advertencias. No resuelve controversias: eso es del tribunal arbitral.",r:"M3 · P59"},
+{id:"M3-30",m:3,q:"¿Dónde puede un inversor verificar si el agente con el que planea invertir está autorizado?",o:["En la página del mercado donde opera el agente","Consultando el Registro Público de Agentes autorizados y registrados en el sitio web de la CNV","En la Autopista de la Información Financiera","En el registro de la UIF"],a:1,e:"Registro público de agentes, en el sitio de la CNV. Los prospectos, en cambio, están en la AIF.",r:"M3 · P63 y P64"},
+{id:"M3-31",m:3,q:"¿A dónde puede recurrir un inversor para consultar su tenencia de valores negociables?",o:["Al Agente de Depósito Colectivo, por los medios que éste habilite","Únicamente a su ALyC","A la CNV, mediante nota","Al mercado donde se negociaron los valores"],a:0,e:"El agente de depósito colectivo (Caja de Valores) informa la tenencia al comitente.",r:"M3 · P68"},
+{id:"M3-32",m:3,q:"Deberán inscribirse en el Registro de Idóneos llevado por la CNV:",o:["Todos los empleados de un agente registrado","Quienes desarrollen la actividad de venta, promoción o cualquier tipo de asesoramiento en el contacto con el público inversor","Sólo los operadores de mesa","Sólo quienes atienden a inversores calificados"],a:1,e:"El criterio es el contacto con el público inversor para vender, promover o asesorar.",r:"M3 · P62"},
+{id:"M3-33",m:3,q:"Sobre la inscripción como idóneo, es correcto que:",o:["Basta con aprobar el examen de la CNV","Para ser idóneo hay que ser dado de alta en el Registro Público de Idóneos por un Agente matriculado","La inscripción la tramita el propio postulante ante la CNV","La aprobación del examen habilita a operar por cuenta propia"],a:1,e:"Aprobar el examen no alcanza: el alta la solicita un Agente registrado.",r:"M3 · P67 y P60"},
+{id:"M3-34",m:3,q:"¿Qué debe ocurrir para que un idóneo inactivo sea dado de baja definitiva del Registro?",o:["Permanecer inactivo por dos años o no cumplir con los cursos de actualización requeridos","Permanecer inactivo por seis meses","No renovar su matrícula anual","Cambiar de agente empleador"],a:0,e:"Dos años de inactividad o incumplimiento de la capacitación de actualización.",r:"M3 · P66"},
+{id:"M3-35",m:3,q:"¿Quiénes NO pueden ser inscriptos como idóneos de los agentes registrados?",o:["Quienes no tengan título universitario","Quienes no puedan ejercer el comercio, los fallidos, los concursados y los inhabilitados por el BCRA, hasta cinco años después de su rehabilitación","Los menores de 21 años","Quienes trabajen simultáneamente en dos agentes"],a:1,e:"Inhabilitaciones comerciales y del BCRA, con el plazo de 5 años posteriores a la rehabilitación.",r:"M3 · P73"},
+{id:"M3-36",m:3,q:"Ante incumplimientos normativos del idóneo:",o:["Sólo responde el Agente que lo empleó","La CNV podrá sancionar al idóneo, y la responsabilidad podrá extenderse también al Agente y a sus integrantes","La responsabilidad es exclusivamente penal","Responde el mercado donde opera el agente"],a:1,e:"Sanciones del art. 132 de la Ley 26.831 al idóneo, sin perjuicio de la responsabilidad del Agente y sus integrantes.",r:"M3 · P61 y P67"},
+{id:"M3-37",m:3,q:"¿Cuáles son los aspectos mínimos que un agente debe considerar al determinar el perfil de riesgo del cliente?",o:["Únicamente el monto disponible para invertir","Experiencia en inversiones, conocimiento de los instrumentos, objetivo y horizonte de inversión, situación financiera, porcentaje de ahorros destinado a invertir y nivel de ahorro que está dispuesto a arriesgar; no aplica a inversores institucionales","Sólo la edad y la ocupación del cliente","El perfil tributario informado por AFIP"],a:1,e:"La excepción expresa: no se aplica a inversores institucionales.",r:"M3 · P72"},
+{id:"M3-38",m:3,q:"¿Con qué frecuencia debe actualizarse el perfil de riesgo del cliente?",o:["Al menos una vez al año, o en la primera oportunidad en que pretenda operar después de ese plazo","Cada tres años","Sólo al abrir la cuenta comitente","Cada vez que el cliente opera"],a:0,e:"Anual, o al primer intento de operar vencido el plazo.",r:"M3 · P65"},
+{id:"M3-39",m:3,q:"¿A partir de qué edad un ALyC puede abrir subcuentas comitentes a nombre de una persona menor de edad?",o:["A partir de los 16 años","A partir de los 13 años","A partir de los 18 años","No puede en ningún caso"],a:1,e:"Desde los 13 años (RG 1023/2024), con operatoria limitada.",r:"M3 · P92 y P103"},
+{id:"M3-40",m:3,q:"Los menores de entre 13 y 17 años titulares de subcuentas comitentes pueden realizar:",o:["Cualquier operación con autorización de sus padres","Únicamente operaciones de contado y caución colocadora","Sólo suscripción de FCI de renta variable","Operaciones de contado y venta en corto"],a:1,e:"Contado (renta fija/variable) y caución colocadora. También pueden suscribir FCI de Mercado de Dinero.",r:"M3 · P93 y P103"},
+{id:"M3-41",m:3,q:"¿Qué emisoras están obligadas a contar con un Comité de Auditoría y cómo se integra?",o:["Todas las emisoras del régimen general; se integra con síndicos","Las emisoras que hacen oferta pública de acciones; se integra con directores, con mayoría de independientes","Sólo las PyME CNV; se integra con auditores externos","Todas las sociedades bajo control societario de la CNV; se integra con accionistas"],a:1,e:"Comité de Auditoría: obligatorio para emisoras de acciones, formado por directores con mayoría de independientes.",r:"M3 · P84, P85, P86 y P104"},
+{id:"M3-42",m:3,q:"¿Qué es un Código de Gobierno Societario y con qué periodicidad se presenta?",o:["Una herramienta de reporte de buenas prácticas corporativas que presentan las emisoras del régimen general, anualmente como anexo de la Memoria","Un reglamento interno aprobado por la CNV cada tres años","Un manual de procedimientos operativos de presentación trimestral","Un contrato entre accionistas inscripto en el Registro Público"],a:0,e:"Anual, como anexo de la Memoria. Obligadas: emisoras del régimen general por acciones u ON.",r:"M3 · P81, P88, P89 y P105"},
+{id:"M3-43",m:3,q:"¿Las prácticas del Código de Gobierno Societario de la CNV son obligatorias para las emisoras alcanzadas?",o:["Sí, su incumplimiento genera sanción automática","No son obligatorias, pero la emisora debe explicar cómo cumple con los principios de gobierno corporativo que subyacen a cada práctica","Sí, salvo para las PyME CNV","No, y tampoco deben informar nada al respecto"],a:1,e:"Esquema \"cumplir o explicar\": no son obligatorias, pero hay que fundamentar.",r:"M3 · P90"},
+{id:"M3-44",m:3,q:"Según el art. 272 de la Ley 19.550, si un director tuviese un interés contrario al de la sociedad:",o:["Debe renunciar al cargo","Debe hacerlo saber al directorio y a los síndicos, y abstenerse de intervenir en la deliberación","Puede votar si lo informa por escrito","Debe transferir sus acciones antes de la reunión"],a:1,e:"Informar + abstenerse. Es el deber de conducta frente al conflicto de interés.",r:"M3 · P98 y P10"},
+{id:"M3-45",m:3,q:"Según el art. 59 de la Ley 19.550, ¿qué responsabilidad les cabe a los administradores que faltaren a sus obligaciones de lealtad y diligencia?",o:["Limitada al monto de su remuneración","Ilimitada y solidaria por acción u omisión","Sólo penal","Subsidiaria respecto de la sociedad"],a:1,e:"Ilimitada y solidaria, por acción u omisión, por los daños y perjuicios causados.",r:"M3 · P97"},
+{id:"M3-46",m:3,q:"En cumplimiento del deber de lealtad y diligencia, los directores de las emisoras deberán:",o:["Priorizar el interés del accionista controlante","Hacer prevalecer, sin excepción, el interés social de la emisora y el interés común de todos sus socios","Seguir las instrucciones del comité de auditoría","Consultar cada decisión relevante con la CNV"],a:1,e:"Interés social e interés común de todos los socios, sin excepciones.",r:"M3 · P37"},
+{id:"M3-47",m:3,q:"Según el art. 73 de la Ley 26.831, los contratos con partes relacionadas por montos relevantes requieren obligatoriamente:",o:["Aprobación de la asamblea extraordinaria","La aprobación del Directorio con indicación de la existencia de los pronunciamientos del comité de auditoría o, en su caso, de las firmas evaluadoras independientes","Autorización previa de la CNV","Dictamen de la comisión fiscalizadora únicamente"],a:1,e:"Aprobación del directorio respaldada por el comité de auditoría o evaluadoras independientes.",r:"M3 · P96 y P78"},
+{id:"M3-48",m:3,q:"En sociedades del régimen de oferta pública por acciones o valores de deuda, la Comisión Fiscalizadora:",o:["Debe tener mayoría de miembros independientes","Debe estar integrada en su totalidad por miembros independientes","No requiere independencia","Se reemplaza por el comité de auditoría"],a:1,e:"La totalidad de los síndicos debe ser independiente. En el comité de auditoría, en cambio, alcanza con la mayoría.",r:"M3 · P95"},
+{id:"M3-49",m:3,q:"En el régimen general de oferta pública, una emisora no puede prescindir de publicar en la AIF:",o:["Las actas de las asambleas anuales y los estados contables trimestrales","Sólo la memoria anual","Sólo los hechos relevantes","El listado de accionistas"],a:0,e:"Actas de asamblea y estados contables trimestrales van sí o sí por la AIF.",r:"M3 · P80"},
+{id:"M3-50",m:3,q:"¿Qué obligación tienen los mercados, cámaras compensadoras y agentes registrados respecto de derechos, aranceles y comisiones?",o:["Informarlos anualmente a la CNV","Publicarlos y mantenerlos actualizados en la Autopista de la Información Financiera y de forma idéntica en su página institucional, en lugar destacado","Comunicarlos por escrito a cada cliente","No están obligados a publicarlos"],a:1,e:"Doble publicación: AIF + sitio institucional, con idéntico contenido y en lugar destacado.",r:"M3 · P74"}
+);
+B.push(
+{id:"M4-01",m:4,q:"¿Qué representa el Valor Actual Neto (VAN) en el análisis de inversiones?",o:["La tasa que iguala los flujos a la inversión inicial","La diferencia entre el valor presente de los flujos y la inversión inicial","La suma nominal de los flujos futuros","El plazo de recupero de la inversión"],a:1,e:"VAN = valor presente de los flujos − inversión inicial. La TIR es la tasa que hace VAN = 0.",r:"M4 · P1"},
+{id:"M4-02",m:4,q:"¿Qué indica la Tasa Interna de Retorno (TIR)?",o:["La tasa que iguala el VAN a cero","La tasa libre de riesgo del mercado","El rendimiento garantizado de la inversión","La tasa de descuento fijada por el inversor"],a:0,e:"TIR: la tasa de descuento que anula el VAN.",r:"M4 · P2"},
+{id:"M4-03",m:4,q:"¿Qué factor afecta directamente el cálculo del VAN?",o:["La cantidad de acciones en circulación","La tasa de descuento aplicada a los flujos futuros","El valor nominal del capital social","La cotización de cierre del período anterior"],a:1,e:"A mayor tasa de descuento, menor valor presente de los flujos y menor VAN.",r:"M4 · P6"},
+{id:"M4-04",m:4,q:"¿Cuál es una característica principal de los instrumentos de renta fija?",o:["Pago de intereses preestablecidos y vencimiento definido","Participación en las utilidades del emisor","Derecho a voto en la asamblea","Rendimiento variable según el resultado del ejercicio"],a:0,e:"Flujo conocido de antemano y fecha de vencimiento cierta.",r:"M4 · P3"},
+{id:"M4-05",m:4,q:"¿Cuál de los siguientes es un riesgo asociado a la renta fija?",o:["Riesgo de dilución","Riesgo de reinversión","Riesgo de gobierno corporativo","Riesgo de iliquidez del accionista"],a:1,e:"Los riesgos típicos de renta fija: precio, reinversión, crédito, liquidez y tipo de cambio.",r:"M4 · P4"},
+{id:"M4-06",m:4,q:"¿Qué representa el análisis fundamental en renta variable?",o:["La predicción de precios mediante patrones gráficos","La evaluación de estados financieros y factores económicos","La medición de la volatilidad implícita","El cálculo del margen de garantía exigido"],a:1,e:"Fundamental: valor intrínseco a partir de balances y contexto. Técnico: precios y volúmenes históricos.",r:"M4 · P7"},
+{id:"M4-07",m:4,q:"¿Cuál es el objetivo del análisis técnico?",o:["Determinar el valor intrínseco de la empresa","Predecir movimientos futuros del precio mediante patrones históricos","Evaluar la calidad crediticia del emisor","Calcular el VAN de un proyecto"],a:1,e:"El análisis técnico trabaja sobre el precio y su historia, no sobre los fundamentos de la empresa.",r:"M4 · P8"},
+{id:"M4-08",m:4,q:"¿Qué mide el ratio PER (Price Earnings Ratio)?",o:["La relación entre el precio de la acción y la ganancia por acción","La relación entre el precio y el valor libro","El dividendo sobre el precio de la acción","El endeudamiento sobre el patrimonio neto"],a:0,e:"PER = precio / ganancia por acción. Un PER elevado indica que el mercado espera alto crecimiento de beneficios.",r:"M4 · P9 y P12"},
+{id:"M4-09",m:4,q:"El índice de liquidez de una empresa:",o:["Relaciona el activo no corriente con el activo total","Relaciona el activo corriente con el pasivo corriente e indica la capacidad de cancelar obligaciones de corto plazo","Relaciona el patrimonio neto con el pasivo total","Relaciona el resultado del ejercicio con el patrimonio neto"],a:1,e:"Liquidez = AC / PC. Solvencia = PN / Pasivo. Inmovilización = ANC / Activo. Rentabilidad = Resultado / PN.",r:"M4 · P39 y P40"},
+{id:"M4-10",m:4,q:"El índice de solvencia se obtiene:",o:["Relacionando el activo corriente con el pasivo corriente","Relacionando el patrimonio neto total con el pasivo total","Relacionando el activo total con el pasivo corriente","Relacionando el resultado del ejercicio con las ventas"],a:1,e:"Solvencia = PN / Pasivo total.",r:"M4 · P43"},
+{id:"M4-11",m:4,q:"El índice de rentabilidad de la inversión:",o:["Indica la tasa de retribución del capital aportado por los propietarios y se obtiene relacionando el resultado del ejercicio con el patrimonio neto","Relaciona el resultado con el activo total","Mide la rotación del capital de trabajo","Relaciona los dividendos con el precio de la acción"],a:0,e:"ROE = Resultado del ejercicio / Patrimonio neto.",r:"M4 · P41 y P42"},
+{id:"M4-12",m:4,q:"El índice de inmovilización del capital relaciona:",o:["El activo corriente con el activo total","El activo no corriente con el total del activo","El pasivo no corriente con el patrimonio neto","Los bienes de uso con el capital social"],a:1,e:"Inmovilización = Activo no corriente / Activo total.",r:"M4 · P38"},
+{id:"M4-13",m:4,q:"La ecuación patrimonial básica está definida por:",o:["Activo + Pasivo = Patrimonio Neto","Activo − Pasivo = Patrimonio Neto","Patrimonio Neto − Activo = Pasivo","Activo = Pasivo × Patrimonio Neto"],a:1,e:"A − P = PN. El valor libro del PN son los activos menos los pasivos.",r:"M4 · P57 y P51"},
+{id:"M4-14",m:4,q:"El valor libro de una acción es igual a:",o:["La cotización de cierre del último ejercicio","El patrimonio neto dividido por la cantidad de acciones en circulación","El capital social dividido por la cantidad de acciones","El resultado del ejercicio dividido por la cantidad de acciones"],a:1,e:"Valor libro por acción = PN / acciones en circulación.",r:"M4 · P50"},
+{id:"M4-15",m:4,q:"El Activo es:",o:["El conjunto de bienes y derechos que posee una sociedad","El aporte de los accionistas","La diferencia entre ingresos y egresos del ejercicio","El conjunto de obligaciones frente a terceros"],a:0,e:"Bienes y derechos. Las obligaciones son el pasivo.",r:"M4 · P33"},
+{id:"M4-16",m:4,q:"Los estados contables básicos son:",o:["Balance, memoria, informe del síndico e informe del auditor","El estado de situación financiera, el estado de resultados integrales, el estado de cambios en el patrimonio y el estado de flujos de efectivo","Estado de resultados y reseña informativa","Balance general y anexos"],a:1,e:"Los cuatro estados básicos bajo NIIF. La reseña informativa es obligatoria en EECC anuales y trimestrales, pero no es un estado básico.",r:"M4 · P63 y P58"},
+{id:"M4-17",m:4,q:"¿Cuántos estados contables deben hacer públicos por año calendario las empresas con oferta pública de sus valores negociables?",o:["Dos","Tres","Cuatro","Doce"],a:2,e:"Tres trimestrales más el anual: cuatro presentaciones al año.",r:"M4 · P32"},
+{id:"M4-18",m:4,q:"Los plazos de presentación de los estados financieros para emisoras de acciones y/u obligaciones negociables son:",o:["30 días corridos para trimestrales y 60 para anuales","42 días corridos para trimestrales y 70 días corridos para anuales","45 días hábiles para trimestrales y 90 corridos para anuales","60 días corridos en ambos casos"],a:1,e:"42 corridos (trimestrales) y 70 corridos (anuales). El mismo plazo de 42 días rige para los EECC trimestrales de los fiduciarios financieros.",r:"M4 · P64"},
+{id:"M4-19",m:4,q:"¿Cuál es el objetivo principal de las NIIF?",o:["Uniformar la presentación de estados financieros a nivel global","Establecer las normas de auditoría aplicables","Fijar la política de dividendos de las emisoras","Determinar la base imponible del impuesto a las ganancias"],a:0,e:"Comparabilidad global de la información financiera, presentando información relevante y fiable.",r:"M4 · P19 y P24"},
+{id:"M4-20",m:4,q:"Las NIIF de Contabilidad emanan de ____ y sus interpretaciones sólo pueden ser emitidas por ____:",o:["El IASB / el IFRIC","La FACPCE / el CPCECABA","El IAASB / el IASB","La CNV / la FACPCE"],a:0,e:"IASB dicta las NIIF; el IFRIC emite las interpretaciones.",r:"M4 · P59 y P61"},
+{id:"M4-21",m:4,q:"¿Cómo se define la moneda funcional?",o:["La moneda de curso legal del país donde la entidad está constituida","La moneda del entorno económico principal en el que opera la entidad","La moneda en que se presentan los estados financieros ante la CNV","La moneda en que se emitieron los valores negociables"],a:1,e:"Las NIIF distinguen moneda funcional (entorno económico principal) de moneda de presentación. En Argentina la de presentación será el peso.",r:"M4 · P31, P62 y P70"},
+{id:"M4-22",m:4,q:"¿Cuál es la diferencia clave entre valor histórico y valor corriente?",o:["El valor corriente considera precios de mercado actuales","El valor histórico incluye el ajuste por inflación","El valor corriente sólo se aplica a los pasivos","No hay diferencia bajo NIIF"],a:0,e:"Histórico: costo de origen. Corriente: precios de mercado del momento de la medición.",r:"M4 · P20"},
+{id:"M4-23",m:4,q:"El procedimiento de ajuste por inflación, a los fines de exposición, requiere presentar:",o:["Sólo el ejercicio actual ajustado","El ejercicio anterior ajustado y reexpresado y el ejercicio actual ajustado","Ambos ejercicios a valores históricos","Únicamente una nota explicativa"],a:1,e:"Para que la comparación tenga sentido, ambos ejercicios deben expresarse en moneda homogénea.",r:"M4 · P47"},
+{id:"M4-24",m:4,q:"Si el IASB permite la aplicación anticipada de una nueva NIIF, en el mercado de capitales argentino:",o:["Puede aplicarse anticipadamente sin restricciones","No puede aplicarse en forma anticipada, según las Normas CNV, salvo que al adoptarse la norma se admita expresamente","Puede aplicarse con autorización del auditor externo","Debe aplicarse obligatoriamente en forma anticipada"],a:1,e:"La CNV restringe la aplicación anticipada por el principio de comparabilidad.",r:"M4 · P84 y P126"},
+{id:"M4-25",m:4,q:"Una emisora del régimen general de oferta pública presenta sus estados financieros conforme a:",o:["Normas Contables Profesionales Argentinas","Normas Internacionales de Información Financiera (NIIF)","Normas del BCRA","Las que elija su directorio"],a:1,e:"Regla: NIIF. Excepciones: PyME CNV (NCPA), entidades financieras (BCRA), aseguradoras (SSN) y mutuales (INAES).",r:"M4 · P73, P68, P60, P85 y P87"},
+{id:"M4-26",m:4,q:"Según el Régimen Informativo Periódico, ¿quiénes pueden confeccionar sus estados financieros bajo Normas Contables Profesionales Argentinas?",o:["Todas las emisoras del régimen general","Las emisoras de acciones y/u ON que califican como PyME CNV","Sólo las sociedades extranjeras","Sólo los fideicomisos financieros"],a:1,e:"La PyME CNV queda excluida de la obligación de aplicar NIIF.",r:"M4 · P68 y P127"},
+{id:"M4-27",m:4,q:"Para las NIIF de Contabilidad, tiene preeminencia la información contenida en los estados financieros:",o:["Individuales","Consolidados","Proyectados","Trimestrales"],a:1,e:"Preeminencia de los consolidados. Bajo IFRS 10 la controlante debe consolidar, salvo excepciones como la entidad de inversión.",r:"M4 · P65 y P136"},
+{id:"M4-28",m:4,q:"El auditor independiente emite su informe con ABSTENCIÓN de opinión cuando:",o:["Los estados financieros no fueron preparados de acuerdo con las normas contables aplicables","No puede obtener evidencias adecuadas y suficientes en las que basar su opinión","Existen desvíos poco significativos","La entidad presenta pérdidas acumuladas"],a:1,e:"Abstención: falta de evidencia suficiente. Adversa: los EEFF no se ajustan al marco contable aplicable.",r:"M4 · P34 y P35"},
+{id:"M4-29",m:4,q:"El auditor independiente emite su OPINIÓN profesional respecto de:",o:["Los estados financieros trimestrales","Los estados financieros correspondientes al ejercicio anual o de cierre de ejercicio","La memoria del directorio","El código de gobierno societario"],a:1,e:"Opinión sobre los anuales; sobre los trimestrales emite informe de revisión. En ambos regímenes su informe es obligatorio.",r:"M4 · P36 y P72"},
+{id:"M4-30",m:4,q:"El informe largo o KAM (Key Audit Matters) del auditor independiente:",o:["Reemplaza al informe de auditoría tradicional","Tiene por objeto brindar mayor información sobre cuestiones relevantes halladas durante la auditoría y es obligatorio para estados financieros de entidades listadas","Es optativo en todos los casos","Sólo se emite cuando hay salvedades"],a:1,e:"NIA 701. Obligatorio para entidades listadas.",r:"M4 · P44, P45 y P134"},
+{id:"M4-31",m:4,q:"Cuando existe incertidumbre material relacionada con empresa en funcionamiento (going concern), el auditor debe:",o:["Comunicarlo como una cuestión clave de auditoría (KAM)","Incluirlo en una sección específica y separada de los KAM","Abstenerse de opinar","Omitirlo si la dirección presentó un plan de acción"],a:1,e:"Sección propia (\"Material Uncertainty Related to Going Concern\"), separada de los KAM.",r:"M4 · P46 y P135"},
+{id:"M4-32",m:4,q:"¿Quiénes están obligados a inscribirse en el Registro de Auditores Externos de la CNV?",o:["Todos los contadores públicos matriculados","Los contadores públicos que certifiquen estados financieros de cualquier entidad, patrimonio o sujeto bajo control de la CNV","Sólo los auditores de emisoras de acciones","Sólo los socios de firmas internacionales"],a:1,e:"El criterio es certificar EEFF de sujetos bajo control de la CNV; lo mismo vale para el Registro de Asociaciones de Profesionales Auditores.",r:"M4 · P54 y P55"},
+{id:"M4-33",m:4,q:"Es causal de exclusión del Registro de Auditores Externos:",o:["Ser sancionado con inhabilitación por la CNV en los términos del art. 132 de la Ley 26.831","No presentar declaración jurada de bienes","Auditar más de tres emisoras simultáneamente","Tener menos de cinco años de matrícula"],a:0,e:"Exclusión por inhabilitación. Distinto es la cancelación: no haber sido designado auditor de un sujeto bajo control de la CNV durante los últimos 3 años.",r:"M4 · P53 y P74"},
+{id:"M4-34",m:4,q:"El Registro de Auditores Externos y el de Asociaciones de Profesionales Auditores son:",o:["Reservados, de acceso exclusivo para la CNV","De acceso público a través del sitio web de la CNV","Publicados anualmente en el Boletín Oficial","Accesibles sólo para los agentes registrados"],a:1,e:"Públicos y consultables en el sitio de la CNV.",r:"M4 · P48 y P137"},
+{id:"M4-35",m:4,q:"Sólo pueden desempeñarse como auditores externos los profesionales designados por:",o:["El directorio de la emisora","La asamblea general de accionistas del emisor de los estados financieros","El comité de auditoría","La CNV, de una lista de sorteo"],a:1,e:"La designación es competencia de la asamblea, no del directorio.",r:"M4 · P71"},
+{id:"M4-36",m:4,q:"Se considera que el auditor externo NO cumple con el requisito de independencia:",o:["Si audita a la misma entidad por más de tres ejercicios","Si es propietario, director, gerente o administrador del ente cuyos estados financieros certifica","Si integra una asociación de profesionales","Si percibe honorarios por encima del arancel de referencia"],a:1,e:"Los requisitos de independencia alcanzan también a todo el equipo de trabajo, y exigen actitud mental independiente e independencia aparente.",r:"M4 · P78, P77 y P81"},
+{id:"M4-37",m:4,q:"El sistema de gestión de calidad de una firma de auditoría debe proporcionar seguridad razonable de que:",o:["No existirán errores en los estados financieros auditados","La firma cumple las normas profesionales y los requerimientos legales y reglamentarios aplicables, y que el informe emitido es adecuado según las circunstancias","La entidad auditada es solvente","La auditoría se completará en los plazos de la CNV"],a:1,e:"Obligadas a mantenerlo: las firmas que certifican EEFF de entidades con oferta pública confeccionados bajo NIIF.",r:"M4 · P49 y P56"},
+{id:"M4-38",m:4,q:"Las Normas Internacionales de Auditoría (NIA), conforme la RT 37, son:",o:["De aplicación optativa","De aplicación obligatoria para estados financieros confeccionados bajo cualquier marco de información","Aplicables sólo a entidades listadas","Aplicables sólo a estados financieros bajo NIIF"],a:1,e:"Obligatorias cualquiera sea el marco contable utilizado.",r:"M4 · P76"},
+{id:"M4-39",m:4,q:"Una certificación emitida por un profesional contable es:",o:["Un informe de constatación","Una opinión de auditoría abreviada","Una revisión limitada","Un dictamen con salvedades"],a:0,e:"La certificación constata hechos comprobables; no expresa opinión sobre estados financieros en su conjunto.",r:"M4 · P83"},
+{id:"M4-40",m:4,q:"Según el orden de absorción de pérdidas del Título IV de las Normas CNV, se utilizan primero:",o:["El capital social","Las ganancias reservadas: voluntarias, estatutarias, especiales y legal, en ese orden","La prima de emisión","Los aportes irrevocables"],a:1,e:"Se agotan las reservas de ganancias antes de tocar otros rubros del patrimonio.",r:"M4 · P86"},
+{id:"M4-41",m:4,q:"¿Qué sociedades están bajo control societario de la CNV?",o:["Todas las sociedades anónimas del país","Las que hacen oferta pública de valores negociables: entidades encuadradas en la Ley 22.169, excluidas las PyME CNV Garantizadas","Sólo las emisoras de acciones","Las sociedades con más de 100 accionistas"],a:1,e:"La PyME CNV Garantizada mantiene su control societario en el Registro Público de su jurisdicción.",r:"M4 · P25, P88 y P89"},
+{id:"M4-42",m:4,q:"Las reformas de estatutos de sociedades anónimas bajo control societario de la CNV deben ser aprobadas por:",o:["El directorio","La asamblea ordinaria","La asamblea extraordinaria","La comisión fiscalizadora"],a:2,e:"Asamblea extraordinaria; luego se requiere conformidad de la CNV e inscripción en el Registro Público.",r:"M4 · P100, P26 y P92"},
+{id:"M4-43",m:4,q:"En una sociedad anónima bajo control societario de la CNV, el objeto social debe ser:",o:["Amplio y genérico","Preciso y determinado","Idéntico al de su controlante","Revisado anualmente por la asamblea"],a:1,e:"Objeto preciso y determinado. Para saber qué actividades puede desarrollar la emisora, se consulta el estatuto social.",r:"M4 · P101 y P93"},
+{id:"M4-44",m:4,q:"Las sociedades en el régimen de oferta pública de acciones, en caso de aumento de su capital social, deben:",o:["Sólo inscribir el aumento en el Registro Público","Obtener autorización de oferta pública de la CNV e inscribir el aumento en el Registro Público","Comunicarlo por AIF dentro de los 10 días","Convocar únicamente a asamblea ordinaria"],a:1,e:"Doble recaudo: autorización de oferta pública + inscripción registral.",r:"M4 · P102"},
+{id:"M4-45",m:4,q:"¿Cuál de las siguientes características NO es propia de un bono cupón cero?",o:["No paga cupones de renta durante su vida","Se emite bajo la par","Puede negociarse sobre la par cuando bajan las tasas de interés","Su rendimiento surge de la diferencia entre precio y valor de rescate"],a:2,e:"El cupón cero cotiza siempre bajo la par: su precio es el valor descontado del único pago final.",r:"M4 · P103"},
+{id:"M4-46",m:4,q:"Un bono sobre la par es negociado cuando:",o:["El precio es mayor que su valor nominal","La TIR es mayor que la tasa del cupón","El precio es menor que su valor nominal","El current yield iguala a la TIR"],a:0,e:"Sobre la par: precio > valor nominal. Cuando cotiza a la par, TIR = tasa de cupón = current yield.",r:"M4 · P119"},
+{id:"M4-47",m:4,q:"Un bono cupón cero cotiza con un rendimiento del 9,6% y valor nominal de $1.000, con vencimiento en 10 años. Su precio actual es:",o:["$399,85","$519,20","$614,50","$904,00"],a:0,e:"1.000 / (1,096)^10 ≈ 399,85. Es la lógica del descuento: a mayor tasa y mayor plazo, menor precio.",r:"M4 · P116"},
+{id:"M4-48",m:4,q:"Un bono con VN $1.000, vencimiento en 4 años, cupón anual de $100 y TIR del 12%. Su Current Yield es:",o:["10,00%","10,65%","12,00%","8,90%"],a:1,e:"CY = cupón / precio. El precio con TIR 12% es ≈ $939,25 → 100/939,25 = 10,65%.",r:"M4 · P118"},
+{id:"M4-49",m:4,q:"Cartera con bonos X, Y y Z a precios $1.050, $1.000 y $950 y durations 8, 6 y 4. ¿Cuál es la duration de la cartera?",o:["6,00","6,07","6,50","5,80"],a:1,e:"Promedio ponderado por valor: (1050×8 + 1000×6 + 950×4) / 3.000 = 6,07.",r:"M4 · P120"},
+{id:"M4-50",m:4,q:"Con duración modificada 5,21 y convexidad 52,1, ante un aumento de la tasa del 1,21%, la variación de precio es:",o:["−6,30%","−5,54%","−4,80%","+5,54%"],a:1,e:"El efecto duration es negativo (−6,30%) y la convexidad lo amortigua. Regla de examen: si sube la tasa, baja el precio.",r:"M4 · P125"},
+{id:"M4-51",m:4,q:"Los EEFF de EMISORA S.A. muestran AC 11.492, ANC 26.973, PC 16.914, PNC 3.941 y PN 17.610 (en millones). El ratio de liquidez y el de endeudamiento son:",o:["68% y 1,18","65% y 0,96","145% y 1,18","68% y 2,18"],a:0,e:"Liquidez = 11.492/16.914 = 68%. Endeudamiento = (16.914+3.941)/17.610 = 1,18.",r:"M4 · P106"},
+{id:"M4-52",m:4,q:"¿Cuál de las siguientes situaciones puede provocar un incremento del ROE de una sociedad?",o:["Que la ganancia neta disminuya 5% y el promedio del valor libro de las acciones disminuya 10%","Que la ganancia neta aumente 5% y el patrimonio neto aumente 10%","Que la ganancia neta y el patrimonio neto aumenten en la misma proporción","Que el pasivo se cancele con nuevos aportes"],a:0,e:"El denominador cae más que el numerador, entonces el cociente sube.",r:"M4 · P105"},
+{id:"M4-53",m:4,q:"El 1/10 se vendieron 3 contratos de futuro de dólar a $1.010 y el 1/11 cotizan $1.009,50. Si cierra la posición, el resultado es:",o:["Pérdida de $1.500","Ganancia de $1.500","Ganancia de $500","Sin resultado, hasta el vencimiento"],a:1,e:"Vendido: gana si el precio baja. $0,50 × 3 contratos × US$1.000 = $1.500 de ganancia.",r:"M4 · P107"},
+{id:"M4-54",m:4,q:"Si la volatilidad de una acción baja, lo más probable es que:",o:["El precio de la call suba y el de la put baje","El precio tanto de la call como de la put disminuya","Sólo se modifique el valor intrínseco","Las primas no se vean afectadas"],a:1,e:"La volatilidad alimenta el valor tiempo: si baja, bajan ambas primas.",r:"M4 · P109"},
+{id:"M4-55",m:4,q:"Si el beta de una acción aumenta, es probable que su volatilidad:",o:["Haya disminuido respecto del mercado","Haya aumentado respecto de la del mercado","Se mantenga constante","No tenga relación con el beta"],a:1,e:"El beta mide la sensibilidad respecto del mercado: beta mayor, mayor volatilidad relativa.",r:"M4 · P122"},
+{id:"M4-56",m:4,q:"¿Un split de acciones afecta el índice ponderado por precio y/o el ponderado por capitalización bursátil?",o:["Afecta a ambos","Sólo afecta al índice ponderado por precio","Sólo afecta al ponderado por capitalización","No afecta a ninguno"],a:1,e:"El split cambia el precio unitario pero no la capitalización total.",r:"M4 · P110"},
+{id:"M4-57",m:4,q:"La venta en corto se define como:",o:["La venta de valores propios con liquidación diferida","Operaciones de venta concertadas en el plazo de contado normal cuya liquidación se realiza con valores obtenidos en préstamo en la misma sesión de negociación","La venta de futuros sin garantía inicial","La venta de opciones lanzadas en descubierto"],a:1,e:"Se vende lo que no se tiene, tomándolo en préstamo en la misma rueda.",r:"M4 · P123"},
+{id:"M4-58",m:4,q:"Respecto de las posiciones larga y corta, es verdadero que:",o:["En la posición larga las ganancias potenciales son ilimitadas y las pérdidas pueden alcanzar el 100%; en la corta las ganancias se limitan al 100% y las pérdidas son ilimitadas","En ambas las pérdidas están limitadas al capital invertido","En la posición corta las ganancias son ilimitadas","En la posición larga las pérdidas son ilimitadas"],a:0,e:"El precio puede subir sin techo (mata al vendido) pero no puede bajar de cero (limita al comprado).",r:"M4 · P124"},
+{id:"M4-59",m:4,q:"¿Qué representa el modelo cost of carry en la valuación de futuros?",o:["La relación entre el precio spot y el precio futuro considerando los costos de financiación","El margen de garantía exigido por el mercado","La prima de la opción sobre el futuro","La diferencia entre precio de compra y de venta"],a:0,e:"Precio futuro = spot + costos de mantener la posición hasta el vencimiento.",r:"M4 · P13"},
+{id:"M4-60",m:4,q:"¿Cuál es el principal riesgo al utilizar derivados para cobertura?",o:["Riesgo de crédito del mercado","Riesgo de base: la diferencia entre el activo cubierto y el activo del contrato","Riesgo de reinversión","Riesgo regulatorio"],a:1,e:"La cobertura no es perfecta cuando el subyacente del contrato no coincide exactamente con el activo a cubrir.",r:"M4 · P18 y P17"}
+);
+B.push(
+{id:"M5-01",m:5,q:"¿Cuál es la función principal de un Agente de Negociación?",o:["Intermediar en la compra y venta de valores negociables en mercados autorizados","Custodiar los valores y fondos de sus clientes","Liquidar y compensar las operaciones del mercado","Calificar el riesgo de los valores negociables"],a:0,e:"El AN intermedia, pero no custodia fondos ni valores ni puede ser depositante en el ADCVN.",r:"M5 · P1 y P63"},
+{id:"M5-02",m:5,q:"Los Agentes de Negociación NO pueden:",o:["Ingresar órdenes en los segmentos de concurrencia de ofertas","Efectuar custodia de valores negociables y fondos ni ser depositantes en el Agente Depositario Central de Valores Negociables","Actuar como hacedores de mercado con convenio vigente","Recibir órdenes de clientes por los medios convenidos"],a:1,e:"La custodia y la liquidación son propias del ALyC; el AN opera con convenio con un ALyC Integral.",r:"M5 · P63"},
+{id:"M5-03",m:5,q:"Identifique una limitación o prohibición de la actuación de los Agentes Productores:",o:["No pueden difundir el mercado de capitales","Custodiar fondos y/o valores negociables de clientes o en nombre de clientes","No pueden vincularse con un Agente Asesor Global de Inversión","No pueden contactar clientes minoristas"],a:1,e:"El AP difunde y acerca clientes, pero nunca toca fondos ni valores. Puede estar vinculado a un AAGI.",r:"M5 · P39 y P67"},
+{id:"M5-04",m:5,q:"El Agente Asesor Global de Inversión NO puede:",o:["Realizar operaciones por medio de intermediarios locales y del exterior","Ofrecer públicamente valores negociables sin autorización de oferta pública en Argentina, ni ser cliente del AN con quien celebre convenio","Asesorar sobre carteras de inversión","Vincularse con agentes productores"],a:1,e:"Sí puede operar por intermediarios locales y del exterior; lo prohibido es ofrecer VN sin OP local y ser cliente del AN con el que tiene convenio.",r:"M5 · P64 y P75"},
+{id:"M5-05",m:5,q:"Un ALyC con autorización del comitente para administración discrecional de cartera:",o:["Puede invertir los saldos en beneficio del cliente","Debe pedir instrucción específica para cada operación","No puede operar derivados en ningún caso","Debe informar cada orden a la CNV"],a:0,e:"La administración discrecional habilita a invertir los saldos en beneficio del cliente, dentro del perfil.",r:"M5 · P69"},
+{id:"M5-06",m:5,q:"El ALyC tiene facultades para:",o:["Garantizar rendimientos mínimos a sus clientes","Ofrecer adelantos transitorios con fondos propios por eventos que generen descalce o demoras transitorias","Emitir valores negociables por cuenta propia","Actuar como fiduciario financiero sin registro"],a:1,e:"Adelantos transitorios con fondos propios ante descalces, sí. Garantizar resultados, nunca.",r:"M5 · P70"},
+{id:"M5-07",m:5,q:"El ALyC sólo puede realizar como actividades complementarias aquellas sujetas al control de la CNV, quedando exceptuados los bancos y entidades financieras de la Ley 21.526. Esta afirmación es:",o:["Verdadera","Falsa: puede realizar cualquier actividad comercial","Falsa: los bancos también están alcanzados por la limitación","Verdadera sólo para los ALyC Propios"],a:0,e:"Verdadera. Las entidades financieras quedan exceptuadas de esa limitación.",r:"M5 · P87"},
+{id:"M5-08",m:5,q:"Los Agentes de Calificación de Riesgo:",o:["Sólo pueden calificar valores con oferta pública","Pueden calificar valores negociables con oferta pública y privada, y realizar actividades afines con autorización previa de la CNV","No pueden realizar ninguna actividad además de calificar","Deben abstenerse de calificar fideicomisos financieros"],a:1,e:"Oferta pública y privada, y actividades afines previa autorización. Sus informes no son publicidad ni recomendación de compra o venta.",r:"M5 · P65, P66 y P95"},
+{id:"M5-09",m:5,q:"¿Qué función cumple la Cámara Compensadora?",o:["Autorizar la oferta pública de los valores","Garantizar la liquidación de las operaciones y actuar como contraparte central","Llevar el registro de accionistas","Calificar el riesgo de las operaciones garantizadas"],a:1,e:"Mercados y cámaras compensadoras actúan como contraparte central (CCP) cuando garantizan el cumplimiento de las operaciones.",r:"M5 · P2, P19 y P88"},
+{id:"M5-10",m:5,q:"El fondo de garantía obligatorio de los Mercados/Cámaras Compensadoras cubre los compromisos:",o:["De los clientes frente a sus agentes","No cumplidos entre Agentes, originados en operaciones con garantía de liquidación del Mercado o la Cámara","De las emisoras frente a los tenedores de sus valores","De los agentes frente a la CNV"],a:1,e:"Cubre incumplimientos entre agentes en operaciones garantizadas; no cubre al inversor por su relación con el agente.",r:"M5 · P36 y P124"},
+{id:"M5-11",m:5,q:"Las operaciones con valores negociables deben realizarse, como regla general, en:",o:["Segmentos de negociación bilateral","Segmentos de negociación por interferencia de ofertas con prioridad precio-tiempo y garantía de los Mercados o Cámaras Compensadoras","Operaciones concertadas fuera de mercado entre agentes","Subastas privadas organizadas por el emisor"],a:1,e:"La regla es el segmento garantizado con prioridad precio-tiempo; el bilateral es la excepción.",r:"M5 · P31"},
+{id:"M5-12",m:5,q:"¿Qué significa prioridad precio-tiempo?",o:["Se ejecuta primero la orden de mayor volumen","Se ejecuta primero la orden con mejor precio y, a igual precio, la más antigua","Se ejecuta primero la orden del cliente sobre la del agente","Se ejecutan las órdenes en forma proporcional"],a:1,e:"Primero el mejor precio; a igualdad de precio, la antigüedad de la orden.",r:"M5 · P21 y P11"},
+{id:"M5-13",m:5,q:"En los segmentos de negociación bilateral, la negociación se lleva a cabo:",o:["Entre cualquier par de inversores minoristas","Entre Agentes por su cartera propia y/o entre Agentes e inversores o clientes calificados","Sólo entre el emisor y los colocadores","Sólo en la colocación primaria"],a:1,e:"El segmento bilateral está reservado a cartera propia de agentes y a inversores calificados.",r:"M5 · P35"},
+{id:"M5-14",m:5,q:"¿Qué órdenes deben registrarse en el sistema electrónico de registro de órdenes?",o:["Sólo las de clientes minoristas","Las de clientes y las de cartera propia del Agente a ejecutarse en segmentos de concurrencia de ofertas con prioridad precio-tiempo, y las de segmentos de negociación bilateral","Sólo las órdenes superiores a un monto mínimo","Sólo las órdenes ejecutadas, una vez concertadas"],a:1,e:"Se registran las de clientes y las de cartera propia, en ambos tipos de segmento.",r:"M5 · P33"},
+{id:"M5-15",m:5,q:"Son operaciones de cartera propia las realizadas por:",o:["Los clientes institucionales del Agente","Los miembros de los órganos de administración y fiscalización, síndicos, gerentes, socios, accionistas, empleados, apoderados y representantes del Agente","Los agentes productores vinculados","Los fondos administrados por sociedades gerentes vinculadas"],a:1,e:"La definición es amplia: alcanza a todo el entorno del agente, no sólo a la sociedad.",r:"M5 · P34"},
+{id:"M5-16",m:5,q:"Se entiende que existe instrucción específica cuando:",o:["El cliente firma el convenio de apertura de cuenta","Por cada operación se indican al menos la especie o instrumento, la cantidad, el precio o rango de precio y/o la tasa de rendimiento","El cliente autoriza al agente a operar discrecionalmente","La orden se cursa por escrito"],a:1,e:"Especie + cantidad + precio/rango o tasa, operación por operación.",r:"M5 · P38"},
+{id:"M5-17",m:5,q:"Una venta en corto es una operación de:",o:["Venta de valores negociables obtenidos mediante préstamos de valores concertados en la misma jornada de negociación","Venta de valores propios con liquidación a 48 horas","Venta de contratos de futuro sin garantía","Venta a plazo firme con cancelación anticipada"],a:0,e:"Se vende con valores tomados en préstamo en la misma rueda.",r:"M5 · P41"},
+{id:"M5-18",m:5,q:"En las operaciones de préstamo de valores, los Agentes deben requerir:",o:["Sólo la conformidad del tomador","Conformidad escrita del cliente prestamista y autorización suscripta por el cliente tomador a favor de su Agente","Autorización previa de la CNV","Garantía de una entidad financiera"],a:1,e:"Conformidad escrita de ambas puntas: prestamista y tomador.",r:"M5 · P42"},
+{id:"M5-19",m:5,q:"En la operación de pase y en la de caución, respecto de la propiedad de los valores:",o:["En ambas el tomador conserva la propiedad","En el pase el tomador de fondos pierde la propiedad de los valores; en la caución no","En ambas el tomador pierde la propiedad","En la caución el tomador pierde la propiedad; en el pase no"],a:1,e:"El pase transfiere la propiedad; la caución la deja en garantía. Es la diferencia clásica entre ambas.",r:"M5 · P45"},
+{id:"M5-20",m:5,q:"Las acreencias devengadas durante la vigencia de una operación:",o:["Corresponden siempre al colocador de fondos","De caución corresponden al tomador de fondos; de pase corresponden al colocador","Corresponden siempre al tomador de fondos","Se dividen por partes iguales"],a:1,e:"Coherente con la propiedad: en la caución los valores siguen siendo del tomador, en el pase pasan al colocador.",r:"M5 · P82"},
+{id:"M5-21",m:5,q:"En la fecha de concertación de una caución, ¿qué recibe el tomador de fondos?",o:["El valor de mercado íntegro de la garantía","El valor aforado de la garantía menos los intereses","El valor aforado más los intereses","El valor nominal de los títulos entregados"],a:1,e:"El tomador recibe el aforado menos los intereses; al vencimiento devuelve el aforado más intereses y gastos.",r:"M5 · P43 y P86"},
+{id:"M5-22",m:5,q:"Caución de 1.000 acciones de VN $1 aforadas al 50%. Contado normal $3,00; contado inmediato $3,05; último cierre contado normal $3,03. Intereses $20, gastos $3. El tomador percibe en la apertura:",o:["$1.515","$1.495","$1.518","$1.500"],a:1,e:"Se valoriza al último cierre de contado normal: 1.000 × $3,03 = $3.030 × 50% de aforo = $1.515, menos $20 de intereses = $1.495.",r:"M5 · P110"},
+{id:"M5-23",m:5,q:"Con los mismos datos (aforado $1.515, intereses $20, gastos $3), el tomador abona al vencimiento:",o:["$1.535","$1.518","$1.512","$1.495"],a:1,e:"Devuelve lo recibido más intereses y gastos: 1.495 + 20 + 3 = $1.518.",r:"M5 · P112"},
+{id:"M5-24",m:5,q:"En la fecha de concertación de una caución, la especie entregada en garantía se valoriza considerando:",o:["El precio de contado inmediato del momento de la caución","El último precio de cierre de la especie para liquidar en contado normal","El promedio de la rueda","El valor nominal de la especie"],a:1,e:"Último cierre de contado normal, no el precio del momento ni el inmediato.",r:"M5 · P84"},
+{id:"M5-25",m:5,q:"En las operaciones de caución y de pase, el tomador de fondos y el comprador a plazo firme:",o:["No pueden cancelar anticipadamente","Pueden cancelar anticipadamente abonando el mismo importe que correspondería pagar en la fecha de vencimiento pactada","Deben pagar una penalidad del 2%","Requieren autorización del mercado"],a:1,e:"La cancelación anticipada es posible pagando lo mismo que al vencimiento.",r:"M5 · P81 y P83"},
+{id:"M5-26",m:5,q:"Las operaciones a plazo firme y las de pase pueden realizarse:",o:["Sobre cualquier instrumento negociado en el mercado","Únicamente sobre valores negociables de renta fija y variable, excluidos CPD, letras de cambio, pagarés, certificados de depósito, warrants y plazos fijos","Sólo sobre títulos públicos","Sólo sobre acciones líderes"],a:1,e:"Renta fija y variable, con exclusión expresa de los instrumentos de financiamiento PyME y similares.",r:"M5 · P79 y P80"},
+{id:"M5-27",m:5,q:"Los Agentes habilitados a actuar como Hacedores de Mercado pueden hacerlo en el:",o:["Segmento bilateral exclusivamente","Segmento de negociación con prioridad precio-tiempo y concurrencia de ofertas","Mercado primario únicamente","Segmento de negociación de PyMEs"],a:1,e:"El hacedor de mercado provee liquidez en el segmento de concurrencia de ofertas.",r:"M5 · P32"},
+{id:"M5-28",m:5,q:"La función del Hacedor de Mercado es:",o:["Garantizar el precio de la especie","Proveer liquidez a las especies o instrumentos sobre los que opere, para una formación más eficiente del precio y la reducción de su volatilidad","Actuar exclusivamente por cuenta de terceros","Ejecutar las órdenes de los demás agentes"],a:1,e:"Provee liquidez, actuando también por cuenta propia, y debe sostener ofertas de compra y venta con un spread mínimo.",r:"M5 · P90, P91, P92 y P128"},
+{id:"M5-29",m:5,q:"¿Qué categorías pueden revestir la calidad de Hacedores de Mercado?",o:["Cualquier agente registrado ante la CNV","Los ALyC Integrales, ALyC Propios, ALyC Agro y los AN con convenio vigente con el respectivo ALyC Integral","Sólo los ALyC Integrales","Los agentes productores y los AAGI"],a:1,e:"Lista cerrada de cuatro categorías.",r:"M5 · P89"},
+{id:"M5-30",m:5,q:"Requisito previo a la negociación de un Cheque de Pago Diferido:",o:["Su calificación por un Agente de Calificación de Riesgo","El endoso con especificación de que el CPD será negociado en Mercados regulados por la CNV","La conformidad del banco girado","El aval de una entidad financiera en todos los casos"],a:1,e:"Endoso con leyenda expresa de negociación en mercados bajo competencia de la CNV.",r:"M5 · P51"},
+{id:"M5-31",m:5,q:"En el segmento directo, sólo pueden negociarse Cheques de Pago Diferido cuyo vencimiento se produzca a partir de:",o:["Los 20 días corridos desde la fecha de la decisión de negociarlo","Los 30 días corridos","Los 10 días hábiles","Los 60 días corridos"],a:0,e:"20 días corridos en el segmento directo.",r:"M5 · P52"},
+{id:"M5-32",m:5,q:"En la negociación de Cheques de Pago Diferido, los Agentes deberán:",o:["Garantizar el pago del cheque al inversor","Notificar fehacientemente a los clientes las características de cada modalidad, sus esquemas de garantías y los riesgos ante el no pago del cheque","Retener el 10% del monto como garantía","Registrar cada cheque ante la CNV"],a:1,e:"Deber de información reforzado: modalidades, garantías y procedimiento ante el no pago.",r:"M5 · P57"},
+{id:"M5-33",m:5,q:"Si una PyME decide negociar una Factura de Crédito Electrónica en mercados regulados por la CNV, deberá:",o:["Solicitar autorización de oferta pública","Abrir una cuenta apta para la negociación del instrumento y solicitar la acreditación del instrumento en la misma","Obtener el aval de una SGR","Presentar estados contables auditados"],a:1,e:"Cuenta apta + acreditación del instrumento. La cancelación se rige por el reglamento del Agente de Registro y Pago de FCE.",r:"M5 · P53 y P56"},
+{id:"M5-34",m:5,q:"En la negociación de una Factura de Crédito Electrónica en moneda extranjera:",o:["La gran empresa deberá cancelar la deuda en pesos, conforme el reglamento del Agente de Registro y Pago de FCE","Debe cancelarse necesariamente en la moneda de origen","No está permitida su negociación","La cancelación la define el tenedor"],a:0,e:"Cancelación en pesos según el reglamento del Agente de Registro y Pago.",r:"M5 · P55"},
+{id:"M5-35",m:5,q:"La negociación del instrumento pagaré requiere:",o:["El cumplimiento de los montos y plazos mínimos que fija la CNV","Su aval por una entidad financiera","Autorización de oferta pública","La intervención de un escribano"],a:0,e:"La CNV fija montos y plazos mínimos para el pagaré bursátil.",r:"M5 · P54"},
+{id:"M5-36",m:5,q:"Para los clientes autorizados a operar con Acceso Directo al Mercado (ADM), la redistribución de market data en tiempo real:",o:["Es libre y gratuita","Está sujeta a los aranceles fijados por el Mercado en cuestión","Está prohibida","Requiere autorización de la CNV"],a:1,e:"La información de mercado en tiempo real tiene arancel del Mercado.",r:"M5 · P58 y P126"},
+{id:"M5-37",m:5,q:"Ante la disconformidad del titular respecto de los saldos en custodia en el Agente Depositario Central de Valores Negociables:",o:["Sólo puede reclamar ante su agente","Podrá reclamar ante el ADCVN, su Agente y la CNV","Debe iniciar acción judicial directa","Debe reclamar ante el mercado donde operó"],a:1,e:"Tres vías simultáneas de reclamo.",r:"M5 · P59"},
+{id:"M5-38",m:5,q:"Los Agentes, en los boletos que extiendan a sus clientes, deben:",o:["Indicar sólo el precio neto de la operación","Explicitar las comisiones y todo otro costo de intermediación","Detallar la cartera completa del cliente","Informar el resultado impositivo de la operación"],a:1,e:"Transparencia de costos: comisiones y todo otro costo de intermediación explicitados.",r:"M5 · P49"},
+{id:"M5-39",m:5,q:"Los Agentes pueden trasladar a sus clientes:",o:["Los costos de mantenimiento de cuenta derivados de los servicios que prestan como depositantes en el ADCVN","Las multas que les aplique la CNV","Los costos de su sistema de prevención de lavado","Las pérdidas por operaciones mal ejecutadas"],a:0,e:"Se pueden trasladar los costos de mantenimiento de cuentas en el depositario central.",r:"M5 · P60"},
+{id:"M5-40",m:5,q:"La regulación de la CNV sobre Plataformas de Financiamiento Colectivo incluye:",o:["Plataformas orientadas a la financiación bajo el esquema de equity","Sólo plataformas de préstamos entre particulares","Sólo plataformas de donaciones","Plataformas de intercambio de activos virtuales"],a:0,e:"Equity crowdfunding, incorporado por la Ley 27.440. Los proyectos deben ser Emprendimiento Argentino según la reglamentación del Ministerio de Economía.",r:"M5 · P61 y P62"},
+{id:"M5-41",m:5,q:"¿Quiénes están obligados a inscribirse en el Registro de Proveedores de Servicios de Activos Virtuales de la CNV?",o:["Sólo las personas jurídicas constituidas como SA","Todas las personas humanas residentes en el país y las personas jurídicas que realicen en Argentina alguna de las actividades comprendidas en el art. 4° bis de la Ley 25.246","Sólo quienes custodien activos virtuales de terceros","Sólo los exchanges con más de 1.000 usuarios"],a:1,e:"Alcance amplio: personas humanas residentes y jurídicas que realicen esas actividades en el país.",r:"M5 · P96"},
+{id:"M5-42",m:5,q:"Una persona jurídica ya inscripta ante la CNV y bajo su fiscalización conforme la Ley 26.831, ¿puede inscribirse como PSAV?",o:["Sí, sin restricciones","No: es causal de exclusión para operar como PSAV","Sí, si constituye una unidad de negocio separada","Sí, con autorización previa de la UIF"],a:1,e:"Incompatibilidad expresa: es causal de exclusión.",r:"M5 · P102"},
+{id:"M5-43",m:5,q:"¿Qué recomendación corresponde dar a quien quiere invertir en activos virtuales?",o:["Operar sólo con PSAV registrados en la CNV y conocer los riesgos a los que se expone","Operar únicamente con billeteras del exterior","Invertir sólo en activos con calificación de riesgo","Evitar toda operación con activos virtuales"],a:0,e:"Registro + comprensión de los riesgos. La CNV regula a los PSAV y a los activos virtuales que califiquen como valores negociables.",r:"M5 · P103, P100 y P127"},
+{id:"M5-44",m:5,q:"¿Cuál es una característica de las acciones ordinarias y quién define la política de dividendos?",o:["Otorgan derecho a voto y participación en las utilidades; la política de dividendos la define la asamblea de accionistas","Otorgan preferencia patrimonial; la define el directorio","No otorgan voto; la define la CNV","Otorgan voto múltiple; la define el comité de auditoría"],a:0,e:"Voto + participación en utilidades. Los dividendos los decide la asamblea.",r:"M5 · P7 y P8"},
+{id:"M5-45",m:5,q:"En un aumento de capital del 100% por suscripción con una prima de $2 (VN $1), si el último precio antes del período de suscripción es $4, el precio paridad será:",o:["$3,00","$3,50","$2,50","$4,00"],a:1,e:"Paridad = (precio × viejas + emisión × nuevas) / total. (4×1 + 3×1)/2 = $3,50. El precio de emisión es VN + prima = $3.",r:"M5 · P104"},
+{id:"M5-46",m:5,q:"En un aumento de capital del 200% a un precio de emisión de $1,20, si el último precio antes de la suscripción es $1,50, el precio del derecho de suscripción será:",o:["$0,30","$0,20","$0,10","$0,15"],a:1,e:"Paridad = (1×1,50 + 2×1,20)/3 = $1,30. Derecho = precio anterior − paridad = 1,50 − 1,30 = $0,20.",r:"M5 · P105"},
+{id:"M5-47",m:5,q:"En una suscripción por subasta, el precio de corte es $2,10 y corresponde asignar 300 acciones. Las ofertas a ese precio fueron 1°: 300, 2°: 50, 3°: 250. La asignación final será:",o:["300 al primero por orden cronológico","150 / 25 / 125, en forma proporcional","100 / 100 / 100 en partes iguales","Se declara desierta la asignación"],a:1,e:"Al precio de corte se prorratea: cada oferta recibe el 50% (300/600) de lo solicitado.",r:"M5 · P109"},
+{id:"M5-48",m:5,q:"Una orden de divulgación parcial o ICEBERG es aquella en la que:",o:["No se muestra el precio","Se muestra su precio y parcialmente su cantidad","Se oculta la identidad del agente","Se ejecuta sólo al cierre de la rueda"],a:1,e:"Precio visible, cantidad parcialmente oculta.",r:"M5 · P117"},
+{id:"M5-49",m:5,q:"Los márgenes de garantía en la negociación de futuros:",o:["Constituyen el precio del contrato","Sirven como garantía de cumplimiento","Son la prima que cobra el vendedor","Se integran sólo al vencimiento"],a:1,e:"Garantía inicial al abrir la posición y diferencias diarias mientras la posición está abierta.",r:"M5 · P48 y P112 (MIV)"},
+{id:"M5-50",m:5,q:"Los contratos de futuros agrícolas son:",o:["Contratos a medida entre las partes","Contratos estandarizados para recibir la entrega de una mercadería en un lugar y fecha específicos","Contratos que otorgan un derecho pero no una obligación","Contratos que se liquidan siempre por diferencias"],a:1,e:"Futuro = estandarizado y en mercado. Forward = a medida y OTC. La opción es la que da derecho sin obligación.",r:"M5 · P47"},
+{id:"M5-51",m:5,q:"Los vendedores (lanzadores) de una opción call están obligados a vender el activo subyacente si el comprador ejerce. Esta afirmación es:",o:["Verdadera","Falsa: pueden desistir pagando la prima","Falsa: sólo se liquida por diferencias","Verdadera únicamente en opciones europeas"],a:0,e:"El comprador tiene el derecho; el lanzador, la obligación. La prima es el precio de ese derecho.",r:"M5 · P46 y P14"},
+{id:"M5-52",m:5,q:"Un inversor compró una put con precio de ejercicio $500 pagando una prima de $4. El subyacente cotiza $600. ¿Qué decisión toma?",o:["Ejerce y gana $96","No ejerce la opción y pierde la prima pagada de $4","Ejerce para limitar la pérdida","Espera al vencimiento sin costo alguno"],a:1,e:"Una put sólo conviene si el precio cae por debajo del ejercicio. Acá está out the money: no se ejerce y se pierde la prima.",r:"M5 · P123"},
+{id:"M5-53",m:5,q:"Una opción que cotiza out the money:",o:["No tiene valor intrínseco, pero sí valor temporal: no será ejercida, aunque puede ser vendida por el comprador","No tiene ningún valor y se extingue de inmediato","Tiene valor intrínseco pero no temporal","Debe ejercerse antes del vencimiento"],a:0,e:"Prima = valor intrínseco + valor tiempo. Out the money: intrínseco cero, tiempo positivo.",r:"M5 · P122"},
+{id:"M5-54",m:5,q:"¿Cuál es el objetivo de un swap de tasa de interés?",o:["Intercambiar flujos a tasa fija por flujos a tasa variable","Comprar un activo a futuro a precio pactado","Obtener el derecho a vender un activo","Garantizar la liquidación de una operación"],a:0,e:"El swap intercambia flujos: fija contra variable (o divisas, commodities, equity).",r:"M5 · P15"},
+{id:"M5-55",m:5,q:"Un inversor está vendido en el mercado de contado de un activo y espera que el precio baje. Entonces:",o:["Debe comprar futuros para cubrirse","No necesita cobertura en el mercado de futuros","Debe vender futuros para duplicar la posición","Debe comprar una put"],a:1,e:"Su posición ya se beneficia con la baja que espera: cubrirse neutralizaría el resultado buscado.",r:"M5 · P121"},
+{id:"M5-56",m:5,q:"Un importador debe pagar US$1.000.000 en 60 días y su equipo estima expectativas devaluatorias mayores que las del mercado. Debería:",o:["Vender futuro de dólar a 60 días","Comprar futuro de dólar a 60 días","Comprar una put sobre el dólar","No tomar cobertura"],a:1,e:"Quien tiene un pago futuro en dólares se cubre comprando futuros: fija hoy el tipo de cambio.",r:"M5 · P114 (MIV)"},
+{id:"M5-57",m:5,q:"La competencia disciplinaria sobre los Agentes registrados con matrícula CNV es exclusiva de la CNV. Esta afirmación es:",o:["Verdadera","Falsa","Verdadera sólo respecto de los ALyC","Verdadera sólo en materia de lavado"],a:0,e:"La potestad disciplinaria (sancionar) es exclusiva de la CNV; en cambio la supervisión y el control no lo son: también los ejercen mercados y cámaras.",r:"M5 · P76, P77 y P50"},
+{id:"M5-58",m:5,q:"Según la Ley 26.831, la aplicación de sanciones a los Agentes le corresponde a:",o:["Al mercado donde operan","A la Comisión Nacional de Valores","A la cámara compensadora","A la UIF"],a:1,e:"La CNV sanciona a los agentes; la UIF, en cambio, sanciona los incumplimientos de PLA/FT.",r:"M5 · P50"},
+{id:"M5-59",m:5,q:"Para recibir órdenes e instrucciones de clientes, los Agentes pueden:",o:["Utilizar cualquier medio, sin necesidad de acuerdo previo","Utilizar los medios o modalidades de contacto convenidos con cada cliente en el Convenio de Apertura de Cuenta","Recibirlas únicamente por escrito","Recibirlas sólo mediante grabación telefónica"],a:1,e:"Los medios habilitados son los pactados en el convenio de apertura de cuenta.",r:"M5 · P74"},
+{id:"M5-60",m:5,q:"El cheque de pago diferido goza de oferta pública en los términos de la Ley 26.831 y puede negociarse en mercados bajo competencia de la CNV. Esta afirmación es:",o:["Verdadera","Falsa: requiere autorización expresa para cada emisión","Falsa: sólo si está avalado por una SGR","Verdadera sólo en el segmento avalado"],a:0,e:"El CPD tiene oferta pública por imperio de la ley, en cualquiera de sus segmentos.",r:"M5 · P71"}
+);
+B.push(
+{id:"M6-01",m:6,q:"¿Qué es un Fondo Común de Inversión?",o:["Una sociedad anónima que invierte por cuenta de sus accionistas","Un patrimonio indiviso y separado, administrado por una sociedad gerente, formado por aportes de inversores con los mismos objetivos de inversión","Un contrato por el cual se transmiten bienes a un fiduciario","Un fideicomiso con oferta pública autorizada"],a:1,e:"El FCI no es sujeto de derecho: es un patrimonio indiviso y separado del de la gerente y la depositaria.",r:"M6 · P1, P13, P55 y P56"},
+{id:"M6-02",m:6,q:"¿Qué norma regula los FCI en Argentina?",o:["Ley 24.441","Ley 24.083","Ley 23.576","Ley 26.831"],a:1,e:"Ley 24.083 = FCI. 24.441 = fideicomisos. 23.576 = ON.",r:"M6 · P6 y P18"},
+{id:"M6-03",m:6,q:"¿Qué documento describe las características y la política de inversión del FCI y debe aprobar la CNV?",o:["El prospecto de emisión","El reglamento de gestión","El contrato de suscripción","La memoria de la sociedad gerente"],a:1,e:"El reglamento de gestión es el documento que define objetivo, política de inversión y comisiones, y lo aprueba la CNV.",r:"M6 · P5, P10 y P15"},
+{id:"M6-04",m:6,q:"¿Cuál de estas funciones NO está a cargo de la Sociedad Gerente?",o:["Administrar el fondo y definir la cartera","Confeccionar la contabilidad del fondo","Desempeñar la guarda y custodia de valores y demás instrumentos","Representar a los cuotapartistas"],a:2,e:"La custodia es de la Depositaria. La contabilidad del fondo, en cambio, sí es de la Gerente.",r:"M6 · P47 y P48"},
+{id:"M6-05",m:6,q:"¿Cuál de estas funciones NO está a cargo de la Sociedad Depositaria?",o:["Custodiar los valores del fondo","Percibir el importe de las suscripciones","Confeccionar la contabilidad del Fondo","Pagar los rescates"],a:2,e:"Regla mnemotécnica: Gerente administra y contabiliza; Depositaria custodia y mueve el dinero.",r:"M6 · P47"},
+{id:"M6-06",m:6,q:"¿Qué significan la suscripción y el rescate en un FCI?",o:["Suscripción es la compra de cuotapartes por el inversor y rescate es su venta","Suscripción es el aporte de la gerente y rescate la distribución de utilidades","Ambas son operaciones de la sociedad depositaria por cuenta propia","Suscripción es el ingreso al fondo y rescate la liquidación total del fondo"],a:0,e:"Suscribir = entrar (comprar cuotapartes). Rescatar = salir (vender cuotapartes).",r:"M6 · P8 y P9"},
+{id:"M6-07",m:6,q:"En un FCI Abierto, es posible solicitar rescates:",o:["Totales o parciales y sin límite","Sólo totales","Sólo una vez por mes","Sólo con preaviso de 72 horas"],a:0,e:"Totales o parciales, sin límite. Es la característica central del fondo abierto.",r:"M6 · P51 y P52"},
+{id:"M6-08",m:6,q:"Respecto de los FCI Abiertos, ¿cuál afirmación es correcta?",o:["Nunca pueden abonar rescates con valores de la cartera","Pueden abonar los rescates con valores de cartera en casos excepcionales, con previa autorización de la CNV","Pueden abonar rescates con valores de cartera cuando lo decida la gerente","Sólo abonan rescates al cierre del ejercicio"],a:1,e:"Excepcional y con autorización previa de la CNV: por eso es falso decir que \"en ningún caso\" puede pagarse con valores de la cartera.",r:"M6 · P32 y P54"},
+{id:"M6-09",m:6,q:"Se rescatan 8.512 cuotapartes el 6/1/2020, con comisión de rescate del 2,9%. VCP del 6/1: 10,643. El monto obtenido es:",o:["$90.593","$87.966","$89.891","$92.712"],a:1,e:"8.512 × 10,643 = $90.593 y se descuenta el 2,9% de comisión → $87.966.",r:"M6 · P53"},
+{id:"M6-10",m:6,q:"El valor de la cuotaparte deberá estar expresado con al menos:",o:["Dos decimales","Tres decimales","Cuatro decimales","Sin decimales"],a:1,e:"Tres decimales como mínimo.",r:"M6 · P59"},
+{id:"M6-11",m:6,q:"¿Cuál es el régimen informativo diario de los FCI Abiertos?",o:["Deben informar cantidad de cuotapartes, valor de cuotaparte y patrimonio neto con periodicidad diaria","Deben informar sólo el valor de la cuotaparte, semanalmente","Deben publicar la cartera completa todos los días","No tienen régimen informativo diario"],a:0,e:"Cuotapartes, VCP y PN, todos los días. Los estados contables, en cambio, se presentan anualmente.",r:"M6 · P35 y P44"},
+{id:"M6-12",m:6,q:"¿Con qué periodicidad deben presentarse ante la CNV los estados contables de los FCI Abiertos?",o:["Mensualmente","Trimestralmente","Anualmente","Semestralmente"],a:2,e:"Anualmente para los FCI abiertos.",r:"M6 · P44"},
+{id:"M6-13",m:6,q:"La Sociedad Gerente NO tiene obligación de informar a la CNV, respecto de un FCI Abierto:",o:["El valor de la cuotaparte","La composición de la cartera","La tasa de rendimiento esperada","El patrimonio neto del fondo"],a:2,e:"Ningún FCI puede prometer ni informar rendimientos esperados.",r:"M6 · P40"},
+{id:"M6-14",m:6,q:"¿Cuál es el patrimonio neto mínimo para constituir una sociedad gerente con dos fondos comunes de inversión, según Normas CNV?",o:["100.000 UVA","170.000 UVA","250.000 UVA","1.000.000 UVA"],a:1,e:"170.000 UVA para una gerente con dos fondos.",r:"M6 · P45"},
+{id:"M6-15",m:6,q:"Los FCI pueden operar con instrumentos financieros derivados:",o:["Nunca","Con fines de cobertura o como inversión para administrar más eficazmente la cartera, mientras la exposición total al riesgo de mercado no supere el patrimonio neto del fondo","Sólo con fines de cobertura y hasta el 20% del patrimonio","Sólo los fondos destinados a inversores calificados"],a:1,e:"Cobertura o gestión eficiente, con el tope de exposición igual al patrimonio neto del fondo.",r:"M6 · P31"},
+{id:"M6-16",m:6,q:"En un FCI Abierto destinado al público en general, el máximo que puede invertirse en obligaciones negociables de una misma emisora es:",o:["10%","20%","30%","No hay límite"],a:1,e:"20% por emisora en ON. Para una misma especie de títulos públicos el tope es 30% del patrimonio.",r:"M6 · P37 y P64"},
+{id:"M6-17",m:6,q:"En un FCI Abierto, ¿cuál es el porcentaje máximo de disponibilidades permitido?",o:["10%","25%","50%","No existe un porcentaje máximo"],a:3,e:"Las disponibilidades no tienen tope máximo.",r:"M6 · P38"},
+{id:"M6-18",m:6,q:"¿Cuál es el tope de inversión de un FCI en valores emitidos por la controlante del Administrador o por la controlante o controladas del Custodio?",o:["2% del capital o pasivo obligacionario de la controlante o controlada de que se trate","5% del patrimonio del fondo","10% del haber del fondo","Está prohibido invertir en ellos"],a:0,e:"2%, calculado sobre el capital o pasivo obligacionario del emisor vinculado, según el último balance conocido.",r:"M6 · P63"},
+{id:"M6-19",m:6,q:"Un FCI Abierto de Renta Variable puede invertir en cuotapartes de FCI Cerrados administrados por la propia Sociedad Gerente:",o:["Hasta el 10% del haber","Hasta el 25% del haber","No puede invertir en ellos por ser administrados por la propia gerente","Sin límite, si el objeto es compatible"],a:2,e:"Prohibición por conflicto de interés. En cambio, sí puede invertir en FCI Cerrados de otra gerente, según el tipo de fondo.",r:"M6 · P65"},
+{id:"M6-20",m:6,q:"Un FCI Abierto destinado exclusivamente a Inversores Calificados puede invertir en cuotapartes de FCI Cerrados de otra gerente hasta:",o:["5% del haber","10% del haber","25% del haber","50% del haber"],a:2,e:"25% para inversores calificados; 10% para ASG e Infraestructura; 5% para PyMEs.",r:"M6 · P69, P66, P67 y P68"},
+{id:"M6-21",m:6,q:"Un FCI Abierto PyME puede invertir en cuotapartes de FCI Cerrados administrados por otra Sociedad Gerente, con objeto compatible, hasta:",o:["5% del haber del Fondo","10% del haber del Fondo","25% del haber del Fondo","No puede"],a:0,e:"5% en el caso de los fondos PyME.",r:"M6 · P67"},
+{id:"M6-22",m:6,q:"En un FCI PyME, ¿existen exigencias mínimas de inversión?",o:["No, la política de inversión es libre","Sí: como mínimo el 75% del haber debe invertirse en valores negociables emitidos por PyMEs o por otras entidades cuya emisión tenga por finalidad el financiamiento de PyMEs","Sí: como mínimo el 50%","Sí: como mínimo el 100%"],a:1,e:"75% del haber del fondo.",r:"M6 · P46"},
+{id:"M6-23",m:6,q:"Un FCI Abierto de Renta Variable puede invertir en cuotapartes de FCI Abiertos:",o:["En cualquier fondo abierto, hasta el 20%","Exclusivamente en Fondos de Mercado de Dinero administrados por otra Sociedad Gerente, hasta el 5% del haber","Sólo en fondos de la misma gerente","No puede invertir en otros fondos"],a:1,e:"Sólo money market de otra gerente y hasta el 5%.",r:"M6 · P70"},
+{id:"M6-24",m:6,q:"En un FCI de Mercado de Dinero, el Margen de Liquidez debe constituirse sobre la porción de activos:",o:["Que valúen a precio de mercado","Que valúen a devengamiento","Denominados en moneda extranjera","Con vencimiento mayor a 90 días"],a:1,e:"Sobre los activos valuados a devengamiento. Además, las pruebas de resistencia de mercado son obligatorias para los money market.",r:"M6 · P41 y P62"},
+{id:"M6-25",m:6,q:"Un FCI de Mercado de Dinero que mantiene 25% en acciones emitidas en el país:",o:["Cumple con la normativa","Se encuentra excedido: los money market no pueden invertir en acciones","Cumple si son acciones líderes","Cumple si se cubre con derivados"],a:1,e:"El money market invierte en activos de muy corta duración y alta liquidez; las acciones están fuera de su universo.",r:"M6 · P42"},
+{id:"M6-26",m:6,q:"En un Fondo de Dinero Clásico, la adquisición de títulos de deuda con vencimiento final no mayor a un año está admitida:",o:["Hasta el 20% del patrimonio neto del Fondo","Hasta el 50% del patrimonio neto","Hasta el 100% del patrimonio neto","No está admitida"],a:0,e:"Clásico: 20%. Dinámico: 100%. Por eso el clásico es el de menor volatilidad y sensibilidad a la tasa.",r:"M6 · P71, P72 y P74"},
+{id:"M6-27",m:6,q:"\"Los Fondos de Dinero Clásicos presentan mayor volatilidad y sensibilidad al cambio de tasas que los Dinámicos\". Esta afirmación es:",o:["Verdadera","Falsa","Verdadera sólo en contextos inflacionarios","Depende de la sociedad gerente"],a:1,e:"Es al revés: el clásico es más conservador, con menor volatilidad y exposición al riesgo.",r:"M6 · P73 y P74"},
+{id:"M6-28",m:6,q:"En los FCI Abiertos ASG, el plazo mínimo de conformación de la cartera es de:",o:["30 días corridos","90 días corridos","180 días corridos","1 año"],a:2,e:"180 días corridos para conformar la cartera del fondo ASG.",r:"M6 · P43"},
+{id:"M6-29",m:6,q:"¿Cuál de estos cargos NO se imputa al resultado del Fondo Común de Inversión?",o:["Los honorarios de la sociedad gerente","La comisión de suscripción","Los honorarios de la sociedad depositaria","Los gastos de auditoría del fondo"],a:1,e:"Las comisiones de suscripción y rescate las paga el cuotapartista, no el fondo.",r:"M6 · P49"},
+{id:"M6-30",m:6,q:"¿Quiénes gozan del derecho a la distribución de utilidades devengadas del FCI?",o:["La sociedad gerente","La sociedad depositaria","Los cuotapartistas","Los acreedores del fondo"],a:2,e:"Las utilidades son de los cuotapartistas, titulares del patrimonio indiviso.",r:"M6 · P50"},
+{id:"M6-31",m:6,q:"Respecto de los Fondos Comunes Cerrados, es correcto que:",o:["Admiten rescates diarios como los abiertos","Se pueden adquirir cuotapartes en la colocación primaria y/o en la negociación secundaria, y deben contar con Reglamento de Gestión y Prospecto de Emisión","No requieren prospecto","Sólo pueden ser suscriptos por la sociedad gerente"],a:1,e:"Cantidad fija de cuotapartes: se sale vendiendo en el mercado secundario, no rescatando.",r:"M6 · P34 y P60"},
+{id:"M6-32",m:6,q:"¿En qué categoría debe estar inscripta una sociedad para intervenir en la colocación de un FCI Cerrado?",o:["Agente Productor","Agente de Liquidación y Compensación o Agente de Negociación","Agente Asesor Global de Inversión","Sociedad Depositaria"],a:1,e:"ALyC o AN: la colocación de un fondo cerrado es colocación primaria de valores negociables.",r:"M6 · P36"},
+{id:"M6-33",m:6,q:"¿Es posible la fusión de dos FCI Abiertos administrados por distintas Sociedades Gerentes?",o:["Sí, con autorización de la CNV","No","Sí, si tienen el mismo objeto de inversión","Sí, con el consentimiento de los cuotapartistas"],a:1,e:"Falso: no pueden fusionarse fondos de gerentes distintas.",r:"M6 · P75"},
+{id:"M6-34",m:6,q:"A partir de los 13 años, las personas menores de edad pueden cursar órdenes para suscribir:",o:["Cualquier FCI","FCI Abiertos de Mercado de Dinero","FCI Cerrados de infraestructura","Ningún FCI"],a:1,e:"Money market, coherente con la operatoria de contado y caución colocadora permitida a los adolescentes.",r:"M6 · P61"},
+{id:"M6-35",m:6,q:"Según la RG 1030/2024, los FCI abiertos para Inversores Calificados en moneda extranjera deben:",o:["Ser suscriptos con fondos depositados en el exterior","Ser suscriptos únicamente en pesos","Invertir el 100% en títulos públicos","Contar con calificación de riesgo"],a:0,e:"Suscripción con fondos depositados en el exterior.",r:"M6 · P125"},
+{id:"M6-36",m:6,q:"¿Qué es un fideicomiso financiero?",o:["Un patrimonio indiviso administrado por una sociedad gerente","Un contrato por el cual se transmiten bienes a un fiduciario para un fin determinado, con patrimonio separado del fiduciario","Una sociedad anónima con objeto especial","Un préstamo sindicado con garantía real"],a:1,e:"Diferencia clave con el FCI: el fideicomiso tiene fiduciario y contrato; el FCI no tiene fiduciario.",r:"M6 · P19, P21 y P25"},
+{id:"M6-37",m:6,q:"El Fideicomisario es la persona a quien se transmite la propiedad fiduciaria al concluir el fideicomiso. Podrá ser:",o:["Únicamente un tercero ajeno al contrato","El Fiduciante, el Beneficiario y/o un tercero","Únicamente el Fiduciario","Únicamente el Beneficiario"],a:1,e:"Fiduciante, beneficiario o un tercero. El único que no puede quedarse con los bienes es el fiduciario.",r:"M6 · P79"},
+{id:"M6-38",m:6,q:"A los efectos de constituir un Fideicomiso Financiero, las Normas CNV prohíben:",o:["Que el fiduciante sea una PyME","La constitución de fideicomisos por acto unilateral, es decir aquellos en los que coincidan las personas del Fiduciante y del Fiduciario","Que existan múltiples fiduciantes","Que el beneficiario sea una persona humana"],a:1,e:"No puede coincidir fiduciante con fiduciario: sería un acto unilateral.",r:"M6 · P76"},
+{id:"M6-39",m:6,q:"En un Fideicomiso Financiero con oferta pública se emiten valores fiduciarios, que podrán ser:",o:["Únicamente valores de deuda fiduciaria","Valores de deuda fiduciaria y/o certificados de participación y/o valores fiduciarios atípicos (art. 1820 CCyCN)","Únicamente certificados de participación","Acciones preferidas del fiduciario"],a:1,e:"VDF (deuda, cobra primero), CP (participación, cobra último) y los atípicos del art. 1820.",r:"M6 · P82"},
+{id:"M6-40",m:6,q:"Los valores representativos de deuda de un fideicomiso financiero podrán ser emitidos por:",o:["Únicamente el Fiduciario","El Fiduciario, el Fiduciante o un tercero","Únicamente el Fiduciante","La CNV, en representación del fideicomiso"],a:1,e:"Los VDF pueden ser emitidos por cualquiera de los tres.",r:"M6 · P88"},
+{id:"M6-41",m:6,q:"Un inversor averso al riesgo quiere adquirir valores fiduciarios. ¿Qué le recomendaría?",o:["Certificados de participación, por su mayor rentabilidad","Valores de deuda fiduciaria senior, con bajo riesgo pero menor rentabilidad","Valores fiduciarios atípicos","Un fideicomiso de capital emprendedor"],a:1,e:"El orden de cobro define el riesgo: VDF senior primero, luego subordinados, y los CP al final.",r:"M6 · P90 y P89"},
+{id:"M6-42",m:6,q:"Un Fideicomiso Financiero con oferta pública es aquel en el cual:",o:["El Fiduciario es una entidad inscripta en el registro de Fiduciarios Financieros de la CNV y los Beneficiarios son los titulares de los valores fiduciarios","El Fiduciante debe cotizar en un mercado autorizado","El Fiduciario es designado por la asamblea de tenedores","Los bienes fideicomitidos son de propiedad de los beneficiarios"],a:0,e:"Fiduciario inscripto en el registro de la CNV + beneficiarios = tenedores de los valores fiduciarios.",r:"M6 · P91"},
+{id:"M6-43",m:6,q:"Cuando el activo fideicomitido está constituido total o parcialmente por dinero u otros activos líquidos, coinciden las figuras de:",o:["Fiduciante y Fiduciario","Fiduciante y Beneficiario","Fiduciario y Beneficiario","Beneficiario y Fideicomisario"],a:1,e:"Quien aporta el dinero es a la vez el beneficiario del resultado de la inversión.",r:"M6 · P81 y P94"},
+{id:"M6-44",m:6,q:"¿Cuál es el documento básico a través del cual se realiza la oferta pública de valores fiduciarios?",o:["El contrato de fideicomiso únicamente","El Prospecto / Suplemento de Prospecto","El informe de control y revisión","El reglamento de gestión"],a:1,e:"Prospecto/Suplemento. Ante un pedido de términos y condiciones se pone a disposición el Prospecto/Suplemento/Contrato de Fideicomiso.",r:"M6 · P78 y P95"},
+{id:"M6-45",m:6,q:"El proceso de colocación primaria de valores fiduciarios deberá llevarse a cabo:",o:["A través de sistemas informáticos presentados por los Mercados autorizados por la Comisión","Por venta directa del fiduciario a inversores calificados","Mediante subasta privada organizada por el fiduciante","Por adjudicación proporcional entre los fiduciantes"],a:0,e:"Sistemas de los mercados autorizados. La subasta o licitación no debe ser ciega para el tramo competitivo ni abierta para el no competitivo.",r:"M6 · P80 y P86"},
+{id:"M6-46",m:6,q:"La administración del fideicomiso fue delegada en el Fiduciante, que incumple con el depósito de las cobranzas. ¿Ante quién se inicia el reclamo?",o:["Ante el Fiduciante","Ante el Fiduciario","Ante la CNV","Ante el agente de control y revisión"],a:1,e:"El fiduciario es el responsable frente a los tenedores, aunque haya delegado funciones.",r:"M6 · P83"},
+{id:"M6-47",m:6,q:"Cuando el Fiduciario delega la ejecución de las funciones de administración, el agente de cobro debe depositar los fondos de las cobranzas en una cuenta del fideicomiso, operada exclusivamente por el Fiduciario, en un plazo de:",o:["24 horas","3 días hábiles","5 días hábiles","10 días corridos"],a:1,e:"3 días hábiles para el depósito de las cobranzas.",r:"M6 · P77"},
+{id:"M6-48",m:6,q:"La custodia de los bienes fideicomitidos corresponde al Fiduciario, pero podrá delegarse en:",o:["El Fiduciante, en caso de que se trate de una entidad financiera","Cualquier fiduciante, sin restricción","El agente de control y revisión","Un depositario del exterior"],a:0,e:"Sólo si el fiduciante es entidad financiera. Una empresa comercial cualquiera no puede ser agente de custodia.",r:"M6 · P84 y P87"},
+{id:"M6-49",m:6,q:"Para modificar una condición esencial de la emisión establecida en el contrato de fideicomiso financiero se requiere:",o:["Mayoría simple de los tenedores","El consentimiento unánime de los tenedores de valores fiduciarios emitidos y en circulación","La aprobación de la CNV únicamente","Tres cuartas partes de los tenedores"],a:1,e:"Unanimidad para condiciones esenciales. Las tres cuartas partes se exigen cuando el patrimonio resulta insuficiente.",r:"M6 · P103 y P105"},
+{id:"M6-50",m:6,q:"Ante la insuficiencia del patrimonio del fideicomiso para cumplir sus obligaciones, ¿qué mayoría se requiere para decidir?",o:["Mayoría simple","Dos tercios","Al menos tres cuartas partes de los valores fiduciarios emitidos y en circulación","Unanimidad"],a:2,e:"75% de los valores fiduciarios en circulación.",r:"M6 · P105"},
+{id:"M6-51",m:6,q:"¿Cuándo se considera que un fideicomiso financiero está destinado al financiamiento de PyMEs?",o:["Cuando el fiduciario es una PyME","Cuando se cumple al menos uno de los supuestos previstos: fiduciantes PyME CNV, o al menos el 70% del activo fideicomitido conformado por créditos con sujetos PyME CNV, entre otros","Cuando el 50% del activo proviene de PyMEs","Cuando lo autoriza la SEPyME"],a:1,e:"Basta con cumplir uno de los supuestos i, ii, iii o iv. El umbral relevante es el 70%.",r:"M6 · P98 y P93"},
+{id:"M6-52",m:6,q:"Un cliente sin Certificado MiPyME, titular de una cartera de cheques de pago diferido que financian PyMEs, quiere constituir un FF destinado al financiamiento PyME. ¿Qué estructura corresponde?",o:["Un FF con al menos el 70% del activo fideicomitido (valor nominal) en CPD de operaciones con PyMEs CNV y el 30% restante de otros deudores","Un FF con el 50% en CPD de PyMEs","No puede constituirlo por carecer del certificado","Un FF con el 100% en CPD de PyMEs"],a:0,e:"El fiduciante no PyME puede igualmente calificar si el 70% del activo proviene de operaciones con PyMEs CNV.",r:"M6 · P93"},
+{id:"M6-53",m:6,q:"Los valores negociables emitidos en el marco de los Productos de Inversión Colectiva para el Desarrollo de Infraestructura:",o:["Pueden ser adquiridos por cualquier inversor","Sólo podrán ser adquiridos por los inversores calificados definidos en las Normas","Sólo pueden ser adquiridos por el Estado Nacional","Requieren calificación de riesgo AAA"],a:1,e:"Reservados a inversores calificados. Su objeto es el desarrollo, inversión o financiamiento de infraestructura pública o privada.",r:"M6 · P97 y P99"},
+{id:"M6-54",m:6,q:"¿Cuál es la periodicidad exigida para la presentación de estados contables de los Fideicomisos Financieros, excepto los constituidos como Fondos de Inversión Directa?",o:["Trimestral obligatoria","Por períodos anuales y, opcionalmente, por subperíodos trimestrales","Mensual","Semestral"],a:1,e:"Anual obligatoria y trimestral opcional. En los fondos de inversión directa la trimestral no es opcional.",r:"M6 · P115 y P110"},
+{id:"M6-55",m:6,q:"¿Cuál es el plazo de presentación de los estados contables trimestrales de los Fiduciarios Financieros, para acreditar el requisito patrimonial?",o:["Dentro de los 20 días hábiles","Dentro de los 42 días corridos de cerrado cada trimestre","Dentro de los 70 días corridos","Dentro de los 30 días hábiles"],a:1,e:"42 días corridos, el mismo plazo que rige para los EEFF trimestrales de las emisoras.",r:"M6 · P113"},
+{id:"M6-56",m:6,q:"¿Cuál es el plazo de presentación en el sitio web de la CNV de los informes mensuales de control y revisión del fideicomiso?",o:["Dentro de los 5 días hábiles","Dentro de los 10 días hábiles","Dentro de los 20 días hábiles","Dentro de los 42 días corridos"],a:2,e:"20 días hábiles. Ese informe mensual es donde el inversor consulta el devenir del fideicomiso.",r:"M6 · P117 y P92"},
+{id:"M6-57",m:6,q:"Si la función de control y revisión de los activos subyacentes la ejerce un Contador Público independiente, ¿qué antigüedad en la matrícula se requiere?",o:["No inferior a 3 años","No inferior a 5 años","No inferior a 10 años","No se exige antigüedad"],a:1,e:"5 años de matrícula como mínimo.",r:"M6 · P116"},
+{id:"M6-58",m:6,q:"Para acceder al régimen de Fideicomisos Financieros con Autorización Automática de Emisiones Frecuentes, se requiere:",o:["Haber emitido al menos 7 fideicomisos en total y 3 en los últimos 12 meses","Haber emitido al menos 3 fideicomisos en total","Contar con calificación de riesgo del programa","Un patrimonio mínimo de 1.000.000 UVA"],a:0,e:"7 en total y 3 en los últimos 12 meses, con idénticas características sustanciales: programa, fiduciario, fiduciante y similar composición del activo subyacente.",r:"M6 · P106, P107 y P124"},
+{id:"M6-59",m:6,q:"A los fines de la Oferta Pública con Autorización Automática por su Bajo Impacto, el monto nominal total de los valores fiduciarios emitidos no deberá superar:",o:["500.000 UVA","1.000.000 de UVA emitidos durante los 12 meses anteriores por el mismo fiduciante","7.000.000 de UVA","No hay tope"],a:1,e:"1.000.000 de UVA por fiduciante en 12 meses, sin distinción del activo subyacente.",r:"M6 · P118 y P123"},
+{id:"M6-60",m:6,q:"En los Fideicomisos Financieros destinados al Desarrollo Inmobiliario, ¿puede preverse la reapertura del Período de Colocación de valores ya autorizados?",o:["No, en ningún caso","Sí, si está previsto en el Prospecto y en el Contrato, sin exceder los 5 años desde el inicio del período de colocación original o hasta alcanzar el monto autorizado","Sí, sin límite temporal","Sólo con nueva autorización de oferta pública"],a:1,e:"Previsión contractual + tope de 5 años o monto autorizado.",r:"M6 · P100 y P96"}
+);
+
+
+/* ---------- datos ---------- */
+var MODS=[
+ {n:1,t:"Marco normativo, emisoras, OPA, oferta pública",meta:8,esf:"Esfuerzo medio"},
+ {n:2,t:"Prevención de lavado y financiamiento del terrorismo",meta:9,esf:"Esfuerzo bajo · memoria pura"},
+ {n:3,t:"Transparencia, denuncias, régimen informativo",meta:9,esf:"Esfuerzo bajo"},
+ {n:4,t:"Análisis de inversiones, NIIF, auditoría",meta:6,esf:"Esfuerzo alto · no te obsesiones"},
+ {n:5,t:"Agentes, instrumentos, liquidación y garantías",meta:8,esf:"Esfuerzo medio"},
+ {n:6,t:"FCI y fideicomisos financieros",meta:9,esf:"Esfuerzo bajo"}
+];
+var PLAN=[
+ {d:1,w:1,dia:"lun",b:["Abrir la guía en el Módulo 1. Leer sólo títulos y subtítulos, sin leer el contenido.","Responder 10 preguntas del M1 sin haber estudiado. Vas a fallar casi todas: ese es el punto.","Corregir esas 10. Leer sólo la parte de la guía que explica lo que fallaste."]},
+ {d:2,w:1,dia:"mar",b:["Objetivos, competencias y facultades de la CNV. Definiciones.","Secreto. Procedimiento sancionatorio. Tribunal arbitral.","10 preguntas del M1. Los errores van a la lista de repaso."]},
+ {d:3,w:1,dia:"mié",b:["Emisoras: concepto, requisitos, obligaciones. Prospecto.","Colocación de valores. Inversores institucionales y calificados. Oferta irregular.","10 preguntas del M1."]},
+ {d:4,w:1,dia:"jue",b:["OPA obligatoria. Participaciones residuales. Retiro del régimen de oferta pública.","Gobierno corporativo. PyME CNV.","Práctica completa del M1. Anotá el puntaje. M1 cerrado."]},
+ {d:5,w:1,dia:"vie",b:["Módulo 3 — Transparencia: ámbito de aplicación, obligaciones de los participantes.","Conductas contrarias a la transparencia (esta lista entra casi seguro). Procedimiento ante incumplimiento.","10 preguntas del M3."]},
+ {d:6,w:1,dia:"sáb",b:["Denuncias, reclamos y consultas: qué es cada uno y a dónde van. La diferencia entre los tres es pregunta clásica.","Código de conducta. Obligaciones con clientes y empleadores.","Responsable de Relaciones con el Público Inversor. Oficina de Atención al Inversor. Régimen informativo.","Práctica completa del M3. M3 cerrado."]},
+ {d:7,w:1,dia:"dom",b:[],rest:"Libre. Si querés hacer algo: 10 minutos de lista de errores. Nada más."},
+ {d:8,w:2,dia:"lun",b:["M2 — Concepto de lavado. Objetivo: simulación de licitud. Actividades delictivas precedentes.","Las tres etapas: colocación → estratificación → integración. De memoria y con ejemplos.","Diferencias entre lavado y financiamiento del terrorismo. Ojo: el FT puede tener origen lícito."]},
+ {d:9,w:2,dia:"mar",b:["Marco normativo: Ley 25.246, rol de la UIF, rol de la CNV.","Sujetos obligados. Autoridades de supervisión vs. de aplicación.","10 preguntas del M2."]},
+ {d:10,w:2,dia:"mié",b:["Conozca a su cliente. Perfil. Legajo. Personas expuestas políticamente.","Reporte de operaciones sospechosas: quién, cuándo, plazos. Confidencialidad del reporte.","Práctica completa del M2. M2 cerrado."]},
+ {d:11,w:2,dia:"jue",b:["M6 — FCI: definición, marco normativo (Ley 24.083), características generales.","Sociedad Gerente vs. Sociedad Depositaria: funciones de cada una. Pregunta garantizada.","Clases de fondos. Abiertos vs. cerrados."]},
+ {d:12,w:2,dia:"vie",b:["Suscripciones y rescates. Plazos. Valor de la cuotaparte.","Reglamento de gestión. Prospecto. Ventajas y desventajas de los FCI.","10 preguntas del M6."]},
+ {d:13,w:2,dia:"sáb",b:["Fideicomisos financieros: partes (fiduciante, fiduciario, beneficiario, fideicomisario). Patrimonio separado.","Tipos de fideicomiso. Valores de deuda fiduciaria vs. certificados de participación.","Práctica completa del M6. M6 cerrado.","Repaso de la lista de errores de M1, M2, M3 y M6."]},
+ {d:14,w:2,dia:"dom",b:[],rest:"Libre. Cerraste los 4 módulos más fáciles: ya tenés cubierta la mayoría del examen."},
+ {d:15,w:3,dia:"lun",b:["M5 — Mercados y cámaras compensadoras: BYMA, A3/Matba Rofex, MAE, MAV.","Armá un cuadro comparativo de agentes en UNA carilla: ALyC integral, ALyC propio, Agente de Negociación, Agente Productor, AAGI, ACyDI. Qué puede y qué no puede hacer cada uno.","Terminar el cuadro: depósito colectivo, custodia/registro/pago, corretaje, calificadoras, plataformas de financiamiento colectivo. Sacale una foto: es tu material de repaso hasta el examen."]},
+ {d:16,w:3,dia:"mar",b:["Repasar el cuadro tapando columnas. 10 preguntas del M5.","Valores negociables: clasificación. Acciones: tipos, dividendos.","Títulos públicos. Obligaciones negociables. CPD, pagaré, factura de crédito electrónica."]},
+ {d:17,w:3,dia:"mié",b:["Derivados: futuros y forwards. Diferencia entre ambos.","Opciones: call, put, prima, ejercicio. Swaps (concepto, no profundices).","Colocación primaria, negociación secundaria, prioridad precio-tiempo. Liquidación, compensación y garantías."]},
+ {d:18,w:3,dia:"jue",b:["Práctica completa del M5. M5 cerrado.","M4 — Renta fija: características, condiciones de emisión.","Los riesgos: precio, reinversión, crédito, liquidez, tipo de cambio. Es conceptual, no hay cuentas."]},
+ {d:19,w:3,dia:"vie",b:["VAN, TIR, paridad, duration. Sólo qué son y qué pasa si sube la tasa. No hagas ejercicios largos.","Renta variable: análisis fundamental vs. técnico. Ratios (liquidez, endeudamiento, rentabilidad, PER).","10 preguntas del M4. Acá apuntás a 6/10, no a 10."]},
+ {d:20,w:3,dia:"sáb",b:["NIIF: qué son, diferencias conceptuales con las normas argentinas.","Auditores externos: registro, independencia, tipos de opinión. Información contable periódica y plazos.","Práctica completa del M4. M4 cerrado, y no volvés más sobre él salvo en simulacros.","Repaso general de la lista de errores."]},
+ {d:21,w:3,dia:"dom",b:[],rest:"Libre. Terminaste la semana en la que se abandona."},
+ {d:22,w:4,dia:"lun",b:["Simulacro 1: 60 preguntas en 45 minutos, de corrido, sin pausas, sin consultar nada.","Corregir y anotar el puntaje por módulo. Es normal sacar 30-35 en el primero: no te asustes."]},
+ {d:23,w:4,dia:"mar",b:["Reparación: sólo los errores del simulacro 1.","Por cada error, releer la parte de la guía y escribir en una línea por qué la respuesta correcta es la correcta."]},
+ {d:24,w:4,dia:"mié",b:["Simulacro 2: 60 preguntas, 45 minutos.","Corregir y comparar con el simulacro 1."]},
+ {d:25,w:4,dia:"jue",b:["Reparación de los errores del simulacro 2.","Repaso del cuadro de agentes y de las etapas del lavado."]},
+ {d:26,w:4,dia:"vie",b:["Simulacro 3: 60 preguntas, 45 minutos. Acá deberías estar arriba de 45.","Corregir."]},
+ {d:27,w:4,dia:"sáb",b:["Lista completa de errores acumulados de las 4 semanas.","Cuadro de agentes + gerente vs. depositaria + partes del fideicomiso + etapas del lavado + conductas contrarias a la transparencia.","Chequeo técnico: cámara, micrófono, Teams y compartir pantalla. Confirmar el horario del turno."]},
+ {d:28,w:4,dia:"dom",b:[],rest:"Víspera. No estudiás. 20 minutos mirando el cuadro de agentes y nada más. Dormí bien."}
+];
+var WEEKS=[
+ {n:1,t:"Módulos 1 y 3",s:"Qué puede hacer la CNV, qué es la oferta pública, qué conductas están prohibidas."},
+ {n:2,t:"Módulos 2 y 6",s:"La semana rentable: listas, definiciones y clasificaciones. Acá suben los puntajes."},
+ {n:3,t:"Módulos 5 y 4",s:"La semana pesada. Bloques más chicos y más práctica."},
+ {n:4,t:"Simulacros",s:"No entra tema nuevo. Sólo reloj y tapar agujeros."}
+];
+
+/* ---------- estado persistente ---------- */
+var KEY="cnv-idoneidad-v1";
+var S=load();
+function load(){
+  try{ var r=JSON.parse(localStorage.getItem(KEY)); if(r&&typeof r==="object") return norm(r); }catch(e){}
+  return norm({});
+}
+function norm(o){
+  o.days=o.days||{}; o.scores=o.scores||{}; o.errors=o.errors||[]; o.examDate=o.examDate||"";
+  return o;
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+
+/* ---------- utilidades ---------- */
+function el(id){ return document.getElementById(id); }
+function byMod(m){ return B.filter(function(q){ return q.m===m; }); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco
+  var out=[];
+  MODS.forEach(function(M){
+    var pool=byMod(M.n).filter(function(q,i){ return i%3===(n-1); });
+    if(pool.length<10) pool=pool.concat(byMod(M.n).filter(function(q){ return pool.indexOf(q)<0; }));
+    out=out.concat(pool.slice(0,10));
+  });
+  return out;
+}
+function fmt(s){ var m=Math.floor(s/60), r=s%60; return (m<10?"0":"")+m+":"+(r<10?"0":"")+r; }
+function prep(q){ // baraja las opciones: la correcta no siempre cae en el mismo lugar
+  var ix=shuffle([0,1,2,3]);
+  return {id:q.id,m:q.m,q:q.q,o:ix.map(function(k){ return q.o[k]; }),a:ix.indexOf(q.a),e:q.e,r:q.r};
+}
+
+/* ---------- tema ---------- */
+el("themeBtn").addEventListener("click",function(){
+  var cur=document.documentElement.getAttribute("data-theme");
+  if(!cur){ cur=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"; }
+  document.documentElement.setAttribute("data-theme",cur==="dark"?"light":"dark");
+});
+
+/* ---------- panel ---------- */
+function renderPanel(){
+  // countdown
+  el("examDate").value=S.examDate||"";
+  if(S.examDate){
+    var d=Math.ceil((new Date(S.examDate+"T09:00:00")-new Date())/86400000);
+    el("cdN").textContent=d>1?d+" días":(d===1?"1 día":(d===0?"hoy":"—"));
+  } else { el("cdN").textContent="—"; }
+
+  // módulos
+  var mc=el("modCards"); mc.innerHTML="";
+  MODS.forEach(function(M){
+    var total=byMod(M.n).length;
+    var b=document.createElement("button");
+    b.className="card";
+    b.innerHTML='<span class="tag">Módulo '+M.n+' · meta '+M.meta+'/10</span>'+
+      '<h3>'+M.t+'</h3>'+
+      '<p class="desc">'+M.esf+'</p>'+
+      '<span class="meta">'+total+' preguntas en el banco</span>';
+    b.addEventListener("click",function(){ start({mode:"practica",mod:M.n}); });
+    mc.appendChild(b);
+  });
+
+  // simulacros
+  var sc=el("simCards"); sc.innerHTML="";
+  [1,2,3].forEach(function(n){
+    var sv=S.scores[n];
+    var b=document.createElement("button");
+    b.className="card";
+    b.innerHTML='<span class="tag'+(sv?" done":"")+'">'+(sv?"Hecho · "+sv.total+"/60":"Día "+(20+n*2))+'</span>'+
+      '<h3>Simulacro '+n+'</h3>'+
+      '<p class="desc">60 preguntas, 45 minutos, de corrido. Como el examen real.</p>'+
+      '<span class="meta">'+(sv?"Rehacer (se pisa el puntaje)":"Sin hacer")+'</span>';
+    b.addEventListener("click",function(){ start({mode:"simulacro",sim:n}); });
+    sc.appendChild(b);
+  });
+
+  // tabla
+  var tb=el("scoreBody"); tb.innerHTML="";
+  [1,2,3].forEach(function(n){
+    var sv=S.scores[n], tr=document.createElement("tr");
+    var cells='<td>Simulacro '+n+'</td>';
+    for(var m=1;m<=6;m++){ cells+='<td class="num">'+(sv?sv.mod[m-1]+"/10":'<span class="dash">—</span>')+'</td>'; }
+    cells+='<td class="num total">'+(sv?'<span class="pill '+(sv.total>=42?"ok":"bad")+'">'+sv.total+'/60</span>':'<span class="dash">—</span>')+'</td>';
+    cells+='<td class="num">'+(sv?fmt(sv.secs):'<span class="dash">—</span>')+'</td>';
+    tr.innerHTML=cells; tb.appendChild(tr);
+  });
+
+  // errores
+  var n=S.errors.length;
+  el("errTag").textContent=n+(n===1?" pregunta":" preguntas");
+  el("errTag").className="tag"+(n?" warn":" done");
+  el("errMeta").textContent=n?"Repasalas hasta vaciar la lista":"Nada pendiente todavía";
+  el("errCard").disabled=!n;
+
+  renderDays();
+}
+el("examDate").addEventListener("change",function(){ S.examDate=this.value; save(); renderPanel(); });
+
+var curWeek=1;
+function renderDays(){
+  var wt=el("weekTabs"); wt.innerHTML="";
+  WEEKS.forEach(function(W){
+    var done=PLAN.filter(function(p){ return p.w===W.n && S.days[p.d]; }).length;
+    var b=document.createElement("button");
+    b.className="wk"; b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",curWeek===W.n?"true":"false");
+    b.innerHTML="Semana "+W.n+" · "+W.t+" <span class='mono' style='opacity:.6'>"+done+"/7</span>";
+    b.addEventListener("click",function(){ curWeek=W.n; renderDays(); });
+    wt.appendChild(b);
+  });
+  var W=WEEKS[curWeek-1];
+  var list=el("dayList"); list.innerHTML="";
+  var head=document.createElement("p");
+  head.className="note"; head.style.cssText="font-size:13.5px;color:var(--fg-3);margin:-4px 0 8px";
+  head.textContent=W.s; list.appendChild(head);
+
+  PLAN.filter(function(p){ return p.w===curWeek; }).forEach(function(p){
+    var row=document.createElement("div");
+    row.className="day"+(p.rest?" rest":"")+(S.days[p.d]?" done":"");
+    var chk='<button class="chk" aria-pressed="'+(S.days[p.d]?"true":"false")+'" aria-label="Día '+p.d+' cumplido">'+
+      '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg></button>';
+    var blocks=p.rest? '<div class="blocks">'+p.rest+'</div>'
+      : '<div class="blocks">'+p.b.map(function(t,i){ return '<div><b>B'+(i+1)+'</b>'+t+'</div>'; }).join("")+'</div>';
+    row.innerHTML=chk+'<div class="day-id">Día '+p.d+'<em>'+p.dia+'</em></div>'+blocks;
+    row.querySelector(".chk").addEventListener("click",function(){
+      if(S.days[p.d]) delete S.days[p.d]; else S.days[p.d]=1;
+      save(); renderDays();
+    });
+    list.appendChild(row);
+  });
+}
+el("errCard").addEventListener("click",function(){ start({mode:"errores"}); });
+
+/* ---------- quiz ---------- */
+var Q=null, tick=null;
+function show(v){
+  el("panel").classList.toggle("hidden",v!=="panel");
+  el("quiz").classList.toggle("hidden",v!=="quiz");
+  el("result").classList.toggle("hidden",v!=="result");
+  window.scrollTo(0,0);
+}
+function start(o){
+  var qs, title;
+  if(o.mode==="practica"){
+    qs=shuffle(byMod(o.mod)).slice(0,10);
+    title="Módulo "+o.mod+" · práctica de 10";
+  } else if(o.mode==="errores"){
+    qs=shuffle(B.filter(function(q){ return S.errors.indexOf(q.id)>=0; }));
+    title="Lista de errores · "+qs.length+(qs.length===1?" pregunta":" preguntas");
+  } else {
+    qs=simSet(o.sim);
+    title="Simulacro "+o.sim+" · 60 preguntas";
+  }
+  if(!qs.length) return;
+  qs=qs.map(prep);
+  Q={mode:o.mode,sim:o.sim||null,mod:o.mod||null,qs:qs,ans:new Array(qs.length),flag:{},i:0,
+     revealed:{},t0:Date.now(),left:o.mode==="simulacro"?45*60:0};
+  el("quizTitle").textContent=title;
+  el("clock").classList.toggle("hidden",o.mode!=="simulacro");
+  if(tick){ clearInterval(tick); tick=null; }
+  if(o.mode==="simulacro"){
+    paintClock();
+    tick=setInterval(function(){
+      Q.left--; paintClock();
+      if(Q.left<=0){ clearInterval(tick); tick=null; finish(); }
+    },1000);
+  }
+  show("quiz"); renderQ();
+}
+function paintClock(){
+  var c=el("clock");
+  c.textContent=fmt(Math.max(0,Q.left));
+  c.className="clock mono"+(Q.left<=300?" crit":(Q.left<=600?" warn":""));
+}
+function renderQ(){
+  var q=Q.qs[Q.i], picked=Q.ans[Q.i], rev=Q.revealed[Q.i];
+  el("progFill").style.width=((Q.i)/Q.qs.length*100)+"%";
+  el("qMod").textContent="Módulo "+q.m;
+  el("qNum").textContent="Pregunta "+(Q.i+1)+" de "+Q.qs.length;
+  el("qText").textContent=q.q;
+
+  var box=el("qOpts"); box.innerHTML="";
+  q.o.forEach(function(txt,k){
+    var b=document.createElement("button");
+    b.className="opt";
+    b.setAttribute("aria-pressed", picked===k?"true":"false");
+    if(rev){
+      if(k===q.a) b.classList.add("good");
+      else if(picked===k) b.classList.add("wrong");
+      b.disabled=true;
+    }
+    b.innerHTML='<span class="k">'+"ABCD"[k]+'</span><span>'+txt+'</span>';
+    b.addEventListener("click",function(){ pick(k); });
+    box.appendChild(b);
+  });
+
+  var ex=el("qExpl"); ex.innerHTML="";
+  if(rev){
+    var ok=picked===q.a;
+    var d=document.createElement("div");
+    d.className="expl "+(ok?"good":"wrong");
+    d.innerHTML='<span class="verdict">'+(ok?"Correcto":"Incorrecto — la respuesta es "+"ABCD"[q.a])+'</span>'+
+      '<span>'+q.e+'</span><span class="ref">Guía de estudio · '+q.r+'</span>';
+    ex.appendChild(d);
+  }
+  renderFoot();
+}
+function renderFoot(){
+  var f=el("qFoot"); f.innerHTML="";
+  if(Q.mode==="simulacro"){
+    var grid=document.createElement("div");
+    grid.className="navgrid";
+    Q.qs.forEach(function(q,k){
+      var b=document.createElement("button");
+      b.className="nq"+(Q.ans[k]!=null?" ans":"")+(Q.flag[k]?" flag":"")+(k===Q.i?" cur":"");
+      b.textContent=k+1; b.title="Pregunta "+(k+1);
+      b.addEventListener("click",function(){ Q.i=k; renderQ(); });
+      grid.appendChild(b);
+    });
+    f.appendChild(grid);
+    var sp=document.createElement("div"); sp.className="spacer"; f.appendChild(sp);
+    var fl=document.createElement("button");
+    fl.className="btn btn-s flagbtn"; fl.textContent="Marcar";
+    fl.setAttribute("aria-pressed",Q.flag[Q.i]?"true":"false");
+    fl.addEventListener("click",function(){ Q.flag[Q.i]=!Q.flag[Q.i]; renderQ(); });
+    f.appendChild(fl);
+    var prev=document.createElement("button");
+    prev.className="btn btn-s"; prev.textContent="Anterior"; prev.disabled=Q.i===0;
+    prev.addEventListener("click",function(){ if(Q.i>0){ Q.i--; renderQ(); } });
+    f.appendChild(prev);
+    if(Q.i<Q.qs.length-1){
+      var nx=document.createElement("button");
+      nx.className="btn btn-s btn-p"; nx.textContent="Siguiente";
+      nx.addEventListener("click",function(){ Q.i++; renderQ(); });
+      f.appendChild(nx);
+    } else {
+      var en=document.createElement("button");
+      en.className="btn btn-s btn-p"; en.textContent="Entregar";
+      en.addEventListener("click",confirmFinish);
+      f.appendChild(en);
+    }
+  } else {
+    var lbl=document.createElement("span");
+    lbl.className="lbl";
+    var done=Object.keys(Q.revealed).length;
+    lbl.textContent=done+" de "+Q.qs.length+" respondidas";
+    f.appendChild(lbl);
+    var sp2=document.createElement("div"); sp2.className="spacer"; f.appendChild(sp2);
+    var b=document.createElement("button");
+    b.className="btn btn-s btn-p";
+    if(!Q.revealed[Q.i]){ b.textContent="Elegí una opción"; b.disabled=true; }
+    else if(Q.i<Q.qs.length-1){ b.textContent="Siguiente"; b.addEventListener("click",function(){ Q.i++; renderQ(); }); }
+    else { b.textContent="Ver resultado"; b.addEventListener("click",finish); }
+    f.appendChild(b);
+  }
+}
+function pick(k){
+  if(Q.revealed[Q.i]) return;
+  Q.ans[Q.i]=k;
+  if(Q.mode!=="simulacro") Q.revealed[Q.i]=1;
+  renderQ();
+}
+function confirmFinish(){
+  var sinResp=0;
+  for(var k=0;k<Q.qs.length;k++){ if(Q.ans[k]==null) sinResp++; }
+  var f=el("qFoot"); f.innerHTML="";
+  var msg=document.createElement("span");
+  msg.className="lbl";
+  msg.textContent=sinResp? "Te quedan "+sinResp+" sin responder. No hay penalización por error: contestá igual." : "¿Entregar el simulacro?";
+  f.appendChild(msg);
+  var sp=document.createElement("div"); sp.className="spacer"; f.appendChild(sp);
+  var no=document.createElement("button");
+  no.className="btn btn-s"; no.textContent="Seguir"; no.addEventListener("click",renderFoot); f.appendChild(no);
+  var si=document.createElement("button");
+  si.className="btn btn-s btn-p"; si.textContent="Entregar"; si.addEventListener("click",finish); f.appendChild(si);
+}
+el("exitBtn").addEventListener("click",function(){
+  if(tick){ clearInterval(tick); tick=null; }
+  show("panel"); renderPanel();
+});
+el("backBtn").addEventListener("click",function(){ show("panel"); renderPanel(); });
+
+document.addEventListener("keydown",function(e){
+  if(el("quiz").classList.contains("hidden")) return;
+  if(e.key>="1"&&e.key<="4"){ pick(+e.key-1); e.preventDefault(); return; }
+  var k=e.key.toLowerCase();
+  if(k==="a"||k==="b"||k==="c"||k==="d"){ pick("abcd".indexOf(k)); e.preventDefault(); return; }
+  if(e.key==="ArrowRight"||e.key==="Enter"){ if(Q&&Q.i<Q.qs.length-1&&(Q.mode==="simulacro"||Q.revealed[Q.i])){ Q.i++; renderQ(); } e.preventDefault(); }
+  if(e.key==="ArrowLeft"){ if(Q&&Q.i>0){ Q.i--; renderQ(); } e.preventDefault(); }
+  if(k==="m"&&Q&&Q.mode==="simulacro"){ Q.flag[Q.i]=!Q.flag[Q.i]; renderQ(); e.preventDefault(); }
+});
+
+/* ---------- resultado ---------- */
+function finish(){
+  if(tick){ clearInterval(tick); tick=null; }
+  var secs=Math.round((Date.now()-Q.t0)/1000);
+  var mod=[0,0,0,0,0,0], tot=0, wrong=[], right=[];
+  Q.qs.forEach(function(q,k){
+    var ok=Q.ans[k]===q.a;
+    if(ok){ tot++; mod[q.m-1]++; right.push(k);
+      var ix=S.errors.indexOf(q.id); if(ix>=0) S.errors.splice(ix,1);
+    } else {
+      wrong.push(k);
+      if(S.errors.indexOf(q.id)<0) S.errors.push(q.id);
+    }
+  });
+  if(Q.mode==="simulacro"){ S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()}; }
+  save();
+
+  var n=Q.qs.length;
+  el("resTitle").textContent = Q.mode==="simulacro" ? "Simulacro "+Q.sim
+    : (Q.mode==="errores" ? "Repaso de errores" : "Módulo "+Q.mod+" · práctica");
+  el("resBig").textContent=tot+"/"+n;
+  var v=el("resVerdict");
+  if(Q.mode==="simulacro"){
+    var ap=tot>=42;
+    v.textContent=ap?"Aprobado. Necesitabas 42.":"Debajo de 42. Faltaron "+(42-tot)+".";
+    v.className="verdict "+(ap?"ok":"bad");
+  } else {
+    var pct=Math.round(tot/n*100);
+    v.textContent=pct+"% correctas";
+    v.className="verdict"+(pct>=70?" ok":"");
+  }
+  el("resTime").textContent="Tiempo: "+fmt(secs)+(Q.mode==="simulacro"?" de 45:00":"");
+
+  // barras por módulo
+  var bars=el("resBars"); bars.innerHTML="";
+  MODS.forEach(function(M){
+    var tq=Q.qs.filter(function(q){ return q.m===M.n; }).length;
+    if(!tq) return;
+    var got=mod[M.n-1];
+    var meta=Q.mode==="simulacro"?M.meta:Math.round(M.meta/10*tq);
+    var row=document.createElement("div");
+    row.className="bar";
+    row.innerHTML='<span>M'+M.n+' <span style="color:var(--fg-3)">'+M.t.split(",")[0]+'</span></span>'+
+      '<span class="track"><i class="fill'+(got<meta?" under":"")+'" style="width:'+(got/tq*100)+'%"></i>'+
+      '<i class="goal" style="left:calc('+(meta/tq*100)+'% - 1px)"></i></span>'+
+      '<span class="val">'+got+'/'+tq+'</span>';
+    bars.appendChild(row);
+  });
+
+  // repaso
+  var order=wrong.concat(right);
+  el("revNote").textContent = wrong.length? wrong.length+" para reparar, primero los errores." : "Todo correcto. Igual dejamos el repaso a mano.";
+  var rv=el("resRev"); rv.innerHTML="";
+  if(!order.length){ rv.innerHTML='<div class="empty">Sin preguntas.</div>'; }
+  order.forEach(function(k){
+    var q=Q.qs[k], ok=Q.ans[k]===q.a;
+    var d=document.createElement("div");
+    d.className="revq"+(ok?" ok":"");
+    var tuya = Q.ans[k]==null? "<em style='color:var(--fg-3)'>en blanco</em>" : "ABCD"[Q.ans[k]]+". "+q.o[Q.ans[k]];
+    d.innerHTML='<div class="q">'+q.q+'</div>'+
+      (ok?"":'<div class="line"><b>Tu resp.</b><span>'+tuya+'</span></div>')+
+      '<div class="line"><b>Correcta</b><span>'+"ABCD"[q.a]+". "+q.o[q.a]+'</span></div>'+
+      '<div class="e">'+q.e+' <span class="ref" style="color:var(--fg-3)">· '+q.r+'</span></div>';
+    rv.appendChild(d);
+  });
+  show("result");
+}
+
+renderPanel();
+</script>

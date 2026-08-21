@@ -1,0 +1,9 @@
+# material de estudio propio, no va al repo público
+*.pdf
+
+# ruido de sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+node_modules/
+__pycache__/
