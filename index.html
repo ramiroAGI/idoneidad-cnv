@@ -90,6 +90,11 @@ button{font:inherit; color:inherit; cursor:pointer; background:none; border:none
 button.card:hover{border-color:var(--accent); transform:translateY(-1px)}
 .card h3{font-size:17px}
 .card .meta{font-size:13px; color:var(--fg-3); margin-top:auto}
+.card .cov{display:block; height:4px; border-radius:99px; background:var(--bg-3); overflow:hidden; margin-top:auto}
+.card .cov i{display:block; height:100%; background:var(--accent); border-radius:99px}
+.card .cov ~ .meta{margin-top:0}
+.card .row{display:flex; gap:8px; margin-top:4px}
+.card .row .btn{flex:1}
 .card .desc{font-size:13.5px; color:var(--fg-2); line-height:1.45}
 .tag{
   display:inline-flex; align-items:center; gap:6px; align-self:flex-start;
@@ -268,7 +273,7 @@ td.total{font-weight:600}
   </div>
 
   <section style="margin-top:26px">
-    <div class="sec-head"><h2>Práctica por módulo</h2><span class="note">10 preguntas al azar, con corrección y explicación en el momento.</span></div>
+    <div class="sec-head"><h2>Práctica por módulo</h2><span class="note">Corrección y explicación en el momento. Las de 10 salen de las que todavía no viste; el botón de al lado toma el módulo entero.</span></div>
     <div class="grid cards" id="modCards"></div>
   </section>
 
@@ -286,7 +291,7 @@ td.total{font-weight:600}
   </section>
 
   <section>
-    <div class="sec-head"><h2>Lista de errores</h2><span class="note">Cada pregunta que fallás entra acá. Sale cuando la respondés bien en el repaso.</span></div>
+    <div class="sec-head"><h2>Lista de errores</h2><span class="note">Cada pregunta que fallás entra acá y necesita dos aciertos para salir. Si la volvés a fallar, vuelve a cero.</span></div>
     <div class="grid cards"><button class="card" id="errCard">
       <span class="tag warn" id="errTag">0 preguntas</span>
       <h3>Repasar errores</h3>
@@ -748,9 +753,15 @@ function load(){
   return norm({});
 }
 function norm(o){
-  o.days=o.days||{}; o.scores=o.scores||{}; o.errors=o.errors||[]; o.examDate=o.examDate||"";
+  o.days=o.days||{}; o.scores=o.scores||{}; o.examDate=o.examDate||"";
+  o.seen=o.seen||{};                       // {id: veces que la app te la tomó}
+  if(Array.isArray(o.errors)){             // migración del formato viejo (lista simple)
+    var m={}; o.errors.forEach(function(id){ m[id]=2; }); o.err=m; delete o.errors;
+  }
+  o.err=o.err||{};                         // {id: aciertos que faltan para salir}
   return o;
 }
+function errIds(){ return Object.keys(S.err).filter(function(id){ return S.err[id]>0; }); }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 
 /* ---------- utilidades ---------- */
@@ -791,15 +802,29 @@ function renderPanel(){
   // módulos
   var mc=el("modCards"); mc.innerHTML="";
   MODS.forEach(function(M){
-    var total=byMod(M.n).length;
-    var b=document.createElement("button");
-    b.className="card";
-    b.innerHTML='<span class="tag">Módulo '+M.n+' · meta '+M.meta+'/10</span>'+
+    var pool=byMod(M.n), total=pool.length;
+    var vistas=pool.filter(function(q){ return S.seen[q.id]; }).length;
+    var c=document.createElement("div");
+    c.className="card";
+    c.innerHTML='<span class="tag">Módulo '+M.n+' · meta '+M.meta+'/10</span>'+
       '<h3>'+M.t+'</h3>'+
       '<p class="desc">'+M.esf+'</p>'+
-      '<span class="meta">'+total+' preguntas en el banco</span>';
-    b.addEventListener("click",function(){ start({mode:"practica",mod:M.n}); });
-    mc.appendChild(b);
+      '<span class="cov"><i style="width:'+(vistas/total*100)+'%"></i></span>'+
+      '<span class="meta">'+(vistas===total
+        ? 'Viste las '+total+'. Segunda vuelta en curso.'
+        : 'Viste '+vistas+' de '+total)+'</span>'+
+      '<span class="row"></span>';
+    var row=c.querySelector(".row");
+    var b1=document.createElement("button");
+    b1.className="btn btn-s btn-p"; b1.textContent="10 preguntas";
+    b1.title="Prioriza las que todavía no viste";
+    b1.addEventListener("click",function(){ start({mode:"practica",mod:M.n}); });
+    var b2=document.createElement("button");
+    b2.className="btn btn-s"; b2.textContent="Las "+total;
+    b2.title="El módulo completo, de corrido";
+    b2.addEventListener("click",function(){ start({mode:"practica",mod:M.n,full:1}); });
+    row.appendChild(b1); row.appendChild(b2);
+    mc.appendChild(c);
   });
 
   // simulacros
@@ -828,10 +853,12 @@ function renderPanel(){
   });
 
   // errores
-  var n=S.errors.length;
+  var pend=errIds(), n=pend.length;
+  var medio=pend.filter(function(id){ return S.err[id]===1; }).length;
   el("errTag").textContent=n+(n===1?" pregunta":" preguntas");
   el("errTag").className="tag"+(n?" warn":" done");
-  el("errMeta").textContent=n?"Repasalas hasta vaciar la lista":"Nada pendiente todavía";
+  el("errMeta").textContent = !n ? "Nada pendiente todavía"
+    : (medio ? medio+(medio===1?" ya tiene":" ya tienen")+" un acierto: falta uno más" : "Cada una necesita dos aciertos para salir");
   el("errCard").disabled=!n;
 
   renderDays();
@@ -884,16 +911,28 @@ function show(v){
 function start(o){
   var qs, title;
   if(o.mode==="practica"){
-    qs=shuffle(byMod(o.mod)).slice(0,10);
-    title="Módulo "+o.mod+" · práctica de 10";
+    var pool=byMod(o.mod);
+    if(o.full){
+      qs=shuffle(pool);
+      title="Módulo "+o.mod+" · las "+pool.length+" del banco";
+    } else {
+      // rotación: primero las que menos veces viste, al azar entre las empatadas
+      qs=shuffle(pool).sort(function(a,b){ return (S.seen[a.id]||0)-(S.seen[b.id]||0); }).slice(0,10);
+      title="Módulo "+o.mod+" · práctica de 10";
+    }
   } else if(o.mode==="errores"){
-    qs=shuffle(B.filter(function(q){ return S.errors.indexOf(q.id)>=0; }));
+    var pend=errIds();
+    qs=shuffle(B.filter(function(q){ return pend.indexOf(q.id)>=0; }));
     title="Lista de errores · "+qs.length+(qs.length===1?" pregunta":" preguntas");
   } else {
     qs=simSet(o.sim);
     title="Simulacro "+o.sim+" · 60 preguntas";
   }
   if(!qs.length) return;
+  if(o.mode!=="errores"){   // queda registrado que ya te las tomó
+    qs.forEach(function(q){ S.seen[q.id]=(S.seen[q.id]||0)+1; });
+    save();
+  }
   qs=qs.map(prep);
   Q={mode:o.mode,sim:o.sim||null,mod:o.mod||null,qs:qs,ans:new Array(qs.length),flag:{},i:0,
      revealed:{},t0:Date.now(),left:o.mode==="simulacro"?45*60:0};
@@ -1040,10 +1079,10 @@ function finish(){
   Q.qs.forEach(function(q,k){
     var ok=Q.ans[k]===q.a;
     if(ok){ tot++; mod[q.m-1]++; right.push(k);
-      var ix=S.errors.indexOf(q.id); if(ix>=0) S.errors.splice(ix,1);
+      if(S.err[q.id]>0){ S.err[q.id]--; if(S.err[q.id]<=0) delete S.err[q.id]; }
     } else {
       wrong.push(k);
-      if(S.errors.indexOf(q.id)<0) S.errors.push(q.id);
+      S.err[q.id]=2;   // fallarla la manda al inicio: dos aciertos para salir
     }
   });
   if(Q.mode==="simulacro"){ S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()}; }

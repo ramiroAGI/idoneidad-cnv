@@ -69,7 +69,7 @@ document.documentElement.setAttribute=function(k,v){ this._a[k]=v; };
 const store={};
 global.localStorage={ getItem:k=>store[k]||null, setItem:(k,v)=>{store[k]=v}, };
 
-eval(js + ';globalThis.T={getQ:function(){return Q;},prep:prep,B:B,renderQ:renderQ};');
+eval(js + ';globalThis.T={getQ:function(){return Q;},prep:prep,B:B,renderQ:renderQ,S:S};');
 const prep=(q)=>T.prep(q); const B=T.B; const renderQ=()=>T.renderQ();
 Object.defineProperty(globalThis,'Q',{get:()=>T.getQ()});
 
@@ -94,7 +94,7 @@ ok(ids.weekTabs.children[0].innerHTML.includes('1/7'),'el contador de la semana 
 
 // ---------- 3. práctica por módulo ----------
 console.log('\nPráctica por módulo');
-ids.modCards.children[1].click(); // módulo 2
+ids.modCards.children[1].querySelector('row').children[0].click(); // módulo 2, botón "10 preguntas"
 ok(ids.quiz.classList.contains('hidden')===false,'se abre la vista de preguntas');
 ok(ids.quizTitle.textContent.indexOf('Módulo 2')===0,'título: '+ids.quizTitle.textContent);
 ok(ids.clock.classList.contains('hidden'),'sin cronómetro en práctica');
@@ -114,7 +114,8 @@ for(let n=0;n<10;n++){
 ok(ids.result.classList.contains('hidden')===false,'llega a la pantalla de resultado');
 ok(ids.resBig.textContent==='5/10','puntaje correcto: '+ids.resBig.textContent);
 const st=JSON.parse(store['cnv-idoneidad-v1']);
-ok(st.errors.length===5,'5 preguntas fueron a la lista de errores ('+st.errors.length+')');
+ok(Object.keys(st.err).length===5,'5 preguntas fueron a la lista de errores ('+Object.keys(st.err).length+')');
+ok(Object.values(st.err).every(v=>v===2),'cada una arranca necesitando 2 aciertos');
 ok(ids.resRev.children.length===10,'repaso con las 10 preguntas');
 ok(ids.resBars.children.length===1,'una sola barra: todas son del módulo 2');
 
@@ -128,8 +129,24 @@ for(let n=0;n<5;n++){
   ids.qOpts.children[Q.qs[Q.i].a].click();
   ids.qFoot.children[ids.qFoot.children.length-1].click();
 }
-ok(ids.resBig.textContent==='5/5','5/5 en el repaso');
-ok(JSON.parse(store['cnv-idoneidad-v1']).errors.length===0,'la lista de errores queda vacía');
+ok(ids.resBig.textContent==='5/5','5/5 en el primer repaso');
+const trasUno=JSON.parse(store['cnv-idoneidad-v1']).err;
+ok(Object.keys(trasUno).length===5,'con un acierto todavía NO salen de la lista');
+ok(Object.values(trasUno).every(v=>v===1),'les queda 1 acierto pendiente');
+// segundo repaso: ahí sí se vacían
+ids.backBtn.click();
+ids.errCard.click();
+for(let n=0;n<5;n++){
+  ids.qOpts.children[Q.qs[Q.i].a].click();
+  ids.qFoot.children[ids.qFoot.children.length-1].click();
+}
+ok(Object.keys(JSON.parse(store['cnv-idoneidad-v1']).err).length===0,'con el segundo acierto la lista queda vacía');
+// y fallar una la manda de nuevo a cero
+ids.backBtn.click();
+ids.modCards.children[0].querySelector('row').children[0].click();
+const qFall=Q.qs[0];
+ids.qOpts.children[(qFall.a+1)%4].click();
+ids.exitBtn.click();
 
 // ---------- 5. simulacro ----------
 console.log('\nSimulacro');
@@ -163,7 +180,7 @@ ok(ids.resVerdict.textContent.indexOf('Aprobado')===0,'veredicto: '+ids.resVerdi
 ok(ids.resBars.children.length===6,'6 barras por módulo');
 const st2=JSON.parse(store['cnv-idoneidad-v1']);
 ok(st2.scores['1'] && st2.scores['1'].total===45,'puntaje guardado en el panel');
-ok(st2.errors.length===15,'15 errores/blancos a la lista de repaso ('+st2.errors.length+')');
+ok(Object.keys(st2.err).length===15,'15 errores/blancos a la lista de repaso ('+Object.keys(st2.err).length+')');
 ids.backBtn.click();
 ok(ids.scoreBody.children[0].innerHTML.indexOf('45/60')>0,'la tabla del panel muestra 45/60');
 
@@ -174,6 +191,31 @@ for(let i=0;i<200;i++){ pos[prep(B[0]).a]++; }
 ok(Object.values(pos).every(v=>v>25),'la respuesta correcta rota de posición: '+JSON.stringify(pos));
 const p=prep(B[0]);
 ok(p.o[p.a]===B[0].o[B[0].a],'al barajar, el índice sigue apuntando a la respuesta correcta');
+
+// ---------- 7. rotacion y modulo completo ----------
+console.log('');
+console.log('Rotación y módulo completo');
+T.S.seen={}; T.S.err={};
+ids.backBtn.click();
+
+ids.modCards.children[3].querySelector('row').children[1].click();
+ok(Q.qs.length===60,'el modulo completo trae las 60 de M4 ('+Q.qs.length+')');
+ok(new Set(Q.qs.map(q=>q.id)).size===60,'sin repetidas dentro de la corrida completa');
+ids.exitBtn.click();
+
+const vistos=new Set();
+for(let r=0;r<6;r++){
+  ids.modCards.children[5].querySelector('row').children[0].click();
+  ok(Q.qs.length===10,'ronda '+(r+1)+': 10 preguntas');
+  Q.qs.forEach(q=>vistos.add(q.id));
+  ids.exitBtn.click();
+}
+ok(vistos.size===60,'6 rondas de 10 cubren las 60 de M6 sin repetir ni una ('+vistos.size+')');
+
+ids.modCards.children[5].querySelector('row').children[0].click();
+ok(Q.qs.every(q=>vistos.has(q.id)),'la 7a ronda arranca la segunda vuelta');
+ids.exitBtn.click();
+ok(ids.modCards.children[5].innerHTML.indexOf('Viste las 60')>0,'la tarjeta avisa que ya viste el modulo entero');
 
 console.log('\n'+(fails?fails+' FALLAS':'Todo en verde'));
 process.exit(fails?1:0);

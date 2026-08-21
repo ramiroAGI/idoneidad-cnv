@@ -11,12 +11,14 @@ Se abre con doble clic o se sirve desde cualquier hosting de archivos estáticos
 
 | Modo | Qué es |
 |---|---|
-| Práctica por módulo | 10 preguntas al azar del módulo elegido, con corrección y explicación en el momento |
+| Módulo · 10 preguntas | Rotación: siempre prioriza las que todavía no viste, así seis rondas cubren un módulo de 60 sin repetir ninguna. Corrección y explicación en el momento |
+| Módulo · completo | El módulo entero de corrido, para los días de "cuestionario completo" del plan |
 | Simulacro 1, 2 y 3 | 60 preguntas (10 por módulo), 45:00 de cronómetro, sin corrección hasta entregar |
-| Lista de errores | Cada pregunta fallada entra sola; sale cuando se responde bien en el repaso |
+| Lista de errores | Cada pregunta fallada entra sola y necesita **dos** aciertos para salir; si se vuelve a fallar, arranca de cero |
 
 Los tres simulacros no comparten ninguna pregunta entre sí. Las opciones se barajan en
-cada intento, así que la posición de la respuesta correcta nunca se repite.
+cada intento, así que la posición de la respuesta correcta nunca se repite. Cada tarjeta de
+módulo muestra cuántas preguntas viste sobre el total.
 
 El panel incluye los 28 días del plan con sus bloques, casillas de día cumplido, la tabla
 de puntajes por módulo y las metas por módulo (M1 8, M2 9, M3 9, M4 6, M5 8, M6 9 · se
@@ -67,10 +69,13 @@ Datos que hacen falta para embeberlo o conectarlo:
   {
     "days":   { "1": 1, "2": 1 },        // días del plan marcados como cumplidos
     "scores": { "1": { "mod": [8,9,9,6,8,9], "total": 49, "secs": 2310, "ts": 1770000000000 } },
-    "errors": ["M1-07", "M4-22"],        // ids pendientes de repaso
+    "err":    { "M1-07": 2, "M4-22": 1 },// pendientes: aciertos que faltan para salir (2 o 1)
+    "seen":   { "M1-07": 3, "M1-08": 1 },// veces que la app tomó cada pregunta (alimenta la rotación)
     "examDate": "2026-09-15"
   }
   ```
+
+  La app migra sola el formato viejo (`errors` como array de ids) a `err` con contador.
 
   Si otra app corre en el **mismo origen**, puede leer esa clave para mostrar el progreso
   (puntaje del último simulacro, racha de días, errores pendientes) sin tocar esta app.
