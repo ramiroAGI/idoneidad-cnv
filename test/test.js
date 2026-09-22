@@ -199,23 +199,40 @@ T.S.seen={}; T.S.err={};
 ids.backBtn.click();
 
 ids.modCards.children[3].querySelector('row').children[1].click();
-ok(Q.qs.length===60,'el modulo completo trae las 60 de M4 ('+Q.qs.length+')');
-ok(new Set(Q.qs.map(q=>q.id)).size===60,'sin repetidas dentro de la corrida completa');
+// Los totales salen del banco, no de un 60 fijo: el banco crece y el test no tiene que mentir.
+const nM4=T.B.filter(q=>q.m===4).length, nM6=T.B.filter(q=>q.m===6).length;
+ok(Q.qs.length===nM4,'el modulo completo trae las '+nM4+' de M4 ('+Q.qs.length+')');
+ok(new Set(Q.qs.map(q=>q.id)).size===nM4,'sin repetidas dentro de la corrida completa');
 ids.exitBtn.click();
 
-const vistos=new Set();
-for(let r=0;r<6;r++){
+const vistos=new Set(), rondas=Math.ceil(nM6/10);
+for(let r=0;r<rondas;r++){
   ids.modCards.children[5].querySelector('row').children[0].click();
   ok(Q.qs.length===10,'ronda '+(r+1)+': 10 preguntas');
   Q.qs.forEach(q=>vistos.add(q.id));
   ids.exitBtn.click();
 }
-ok(vistos.size===60,'6 rondas de 10 cubren las 60 de M6 sin repetir ni una ('+vistos.size+')');
+ok(vistos.size===nM6,rondas+' rondas de 10 cubren las '+nM6+' de M6 ('+vistos.size+')');
 
 ids.modCards.children[5].querySelector('row').children[0].click();
-ok(Q.qs.every(q=>vistos.has(q.id)),'la 7a ronda arranca la segunda vuelta');
+ok(Q.qs.every(q=>vistos.has(q.id)),'la ronda siguiente arranca la segunda vuelta');
 ids.exitBtn.click();
-ok(ids.modCards.children[5].innerHTML.indexOf('Viste las 60')>0,'la tarjeta avisa que ya viste el modulo entero');
+ok(ids.modCards.children[5].innerHTML.indexOf('Viste las '+nM6)>0,'la tarjeta avisa que ya viste el modulo entero');
+
+// ---------- 8. simulacros sobre todo el banco ----------
+console.log('');
+console.log('Simulacros sobre todo el banco');
+const sims=[0,1,2].map(i=>{ ids.backBtn.click(); ids.simCards.children[i].click(); const s=Q.qs.map(q=>q.id); ids.exitBtn.click(); return s; });
+const todos=sims.flat();
+ok(new Set(todos).size===180,'los tres simulacros no comparten ninguna pregunta ('+new Set(todos).size+'/180)');
+[1,2,3,4,5,6].forEach(m=>{
+  const delMod=T.B.filter(q=>q.m===m).map(q=>q.id), usadas=todos.filter(id=>delMod.indexOf(id)>=0);
+  const ultima=Math.max(...usadas.map(id=>delMod.indexOf(id)));
+  ok(ultima>=delMod.length*0.8,'M'+m+': los simulacros llegan hasta el final del banco (pos '+(ultima+1)+' de '+delMod.length+')');
+});
+ids.backBtn.click(); ids.simCards.children[0].click();
+ok(JSON.stringify(Q.qs.map(q=>q.id))===JSON.stringify(sims[0]),'el Simulacro 1 es siempre el mismo');
+ids.exitBtn.click();
 
 console.log('\n'+(fails?fails+' FALLAS':'Todo en verde'));
 process.exit(fails?1:0);

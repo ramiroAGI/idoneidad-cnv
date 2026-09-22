@@ -438,7 +438,10 @@ function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco
   MODS.forEach(function(M){
     var pool=byMod(M.n).filter(function(q,i){ return i%3===(n-1); });
     if(pool.length<10) pool=pool.concat(byMod(M.n).filter(function(q){ return pool.indexOf(q)<0; }));
-    out=out.concat(pool.slice(0,10));
+    // 10 espaciadas a lo largo de TODO el tercio, no las 10 primeras: con slice(0,10) un banco
+    // que crece deja las preguntas nuevas (que van al final) fuera de los simulacros para siempre.
+    // Sigue siendo fijo (el Simulacro 1 es siempre el mismo) y los tres siguen sin compartir.
+    for(var j=0;j<10;j++) out.push(pool[Math.floor(j*pool.length/10)]);
   });
   return out;
 }
