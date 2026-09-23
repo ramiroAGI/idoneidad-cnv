@@ -1,7 +1,7 @@
 # Idoneidad CNV
 
 App de estudio para el Examen de Idoneidad en el Mercado de Capitales (CNV Argentina).
-Banco de **590 preguntas** de opción múltiple, práctica por módulo, tres simulacros
+Banco de **735 preguntas** (una por cada pregunta de la guía oficial) de opción múltiple, práctica por módulo, tres simulacros
 cronometrados de 60 preguntas y seguimiento de un plan de 4 semanas.
 
 Es **un solo HTML estático**: sin build en producción, sin dependencias, sin backend.
@@ -94,26 +94,28 @@ Valores, que aclara que las respuestas correctas del examen son únicamente las
 desarrolladas en ese material. Las opciones incorrectas y las explicaciones son propias.
 Material de estudio, sin relación oficial con la CNV.
 
-Nota conocida: la guía trae un ejercicio (compra de acción a $40 más put a $45 con prima
-$4, precio final $38) cuya respuesta oficial dice "$4 de pérdida" cuando la cuenta da +$1.
-Esa pregunta quedó fuera del banco a propósito, para no fijar una cuenta contradictoria.
-
 ### Cobertura de la guía
 
-El banco cubre las 735 preguntas de la Guía de Estudio (M1 109 · M2 82 · M3 67 · M4 112 ·
-M5 114 · M6 106). Hay menos preguntas que en la guía porque la guía repite mucho: cuando
-dos preguntas oficiales preguntan lo mismo, el banco hace una sola y las cita a las dos en `r`.
+El banco es **1 a 1 con la Guía de Estudio**: una pregunta por cada número de la guía, 735 en
+total (M1 127 · M2 112 · M3 106 · M4 137 · M5 128 · M6 125), en el mismo orden, y cada una
+cita en `r` la única pregunta oficial de la que sale (`M5 · P24`). Aunque la guía repita un
+tema, cada forma de preguntarlo tiene su pregunta: el examen sale textual de la guía, y
+fusionarlas dejaba sin practicar enunciados que pueden tomar.
 
-Quedaron afuera a propósito las preguntas en las que **la propia guía se contradice**. Cargar
-cualquiera de las dos versiones haría fallar la otra. Si alguna aparece en el examen, la
-respuesta es la que diga la guía para ese enunciado:
+Las preguntas en las que **la propia guía se contradice** se cargan **cada una con su respuesta
+oficial**, porque el examen corrige con la guía enunciado por enunciado. La otra versión no se
+usa como distractor, y la explicación avisa del choque con un "Ojo:":
 
-| Guía | Dice | Choca con | Qué enseña el banco |
-|---|---|---|---|
-| M2 P19 | conservar documentación: 5 años | M2 P60: 10 años | 10 años (M2-19) |
-| M3 P4 y P23 | hecho relevante: 24 horas | M3 P56, P83, P101: inmediatamente | inmediatamente (M3-04) |
-| M3 P13 y M4 P28 | estados contables: 60 días corridos | M4 P64: 42 días (trimestrales) y 70 días (anuales) | 42/70 (M4-18) |
-| M4 P115 | acción $40 + put: "$4 de pérdida" | la cuenta da +$1 | (ver la nota de arriba) |
+| Guía | Dice | Choca con |
+|---|---|---|
+| M2 P19 | conservar documentación: 5 años | M2 P60: 10 años |
+| M3 P4 y P23 | hecho relevante: 24 horas | M3 P56, P83, P101: inmediatamente |
+| M3 P13 y M4 P28 | estados contables: 60 días corridos | M4 P64: 42 días (trimestrales) y 70 días (anuales) |
+| M4 P84 | no se aplica una NIIF en forma anticipada | M4 P126: salvo que la norma lo admita expresamente |
+| M4 P115 | acción $40 + put $45, prima $4, final $38: "$4 de pérdida" | la cuenta da +$1 |
+
+También hay respuestas oficiales que encajan raro con su enunciado (M2 P48, P49, P71 bis): se
+cargan tal cual, con la aclaración en la explicación.
 
 Los simulacros toman sus 10 preguntas por módulo repartidas a lo largo de todo el banco, no
 las primeras 10: así una pregunta agregada al final también entra. Si se agregan preguntas,
