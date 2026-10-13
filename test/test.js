@@ -79,8 +79,8 @@ const ok=(cond,msg)=>{ console.log((cond?'  ok   ':'  FALLA')+'  '+msg); if(!con
 // ---------- 1. panel ----------
 console.log('\nPanel');
 ok(ids.modCards.children.length===6,'6 tarjetas de módulo');
-ok(ids.simCards.children.length===3,'3 tarjetas de simulacro');
-ok(ids.scoreBody.children.length===3,'3 filas en la tabla de puntajes');
+ok(ids.simCards.children.length===6,'6 tarjetas de simulacro (1-3 fijos, 4-6 al azar)');
+ok(ids.scoreBody.children.length===6,'6 filas en la tabla de puntajes');
 ok(ids.errCard.disabled===true,'"Repasar errores" arranca deshabilitado');
 ok(ids.weekTabs.children.length===4,'4 pestañas de semana');
 ok(ids.dayList.children.length===8,'7 días + encabezado en la semana 1');
@@ -233,6 +233,40 @@ ok(new Set(todos).size===180,'los tres simulacros no comparten ninguna pregunta 
 ids.backBtn.click(); ids.simCards.children[0].click();
 ok(JSON.stringify(Q.qs.map(q=>q.id))===JSON.stringify(sims[0]),'el Simulacro 1 es siempre el mismo');
 ids.exitBtn.click();
+
+// ---------- 9. simulacros al azar (4..6) ----------
+console.log('');
+console.log('Simulacros al azar');
+const az=[0,1].map(()=>{ ids.backBtn.click(); ids.simCards.children[3].click(); const s=Q.qs.map(q=>q.id); ids.exitBtn.click(); return s; });
+ok(az[0].length===60 && new Set(az[0]).size===60,'Simulacro 4: 60 preguntas sin repetir');
+ok([1,2,3,4,5,6].every(m=>az[0].filter(id=>T.B.find(q=>q.id===id).m===m).length===10),'Simulacro 4: 10 por modulo');
+ok(JSON.stringify(az[0])!==JSON.stringify(az[1]),'Simulacro 4: cada vez sale otro sorteo');
+ids.backBtn.click(); ids.simCards.children[5].click();
+ok(Q.qs.length===60,'Simulacro 6 arranca con 60');
+Q.qs.forEach((q,k)=>{ Q.ans[k]=q.a; });
+Q.i=59; renderQ();
+ids.qFoot.children[ids.qFoot.children.length-1].click(); ids.qFoot.children[ids.qFoot.children.length-1].click();
+const st3=JSON.parse(store['cnv-idoneidad-v1']);
+ok(st3.scores['6'] && st3.scores['6'].total===60,'el puntaje del Simulacro 6 se guarda en su fila');
+ok(st3.scores['1'] && st3.scores['1'].total===45,'y no pisa el del Simulacro 1');
+
+// ---------- 10. un progreso guardado ANTES de este cambio se carga intacto ----------
+// Es el estado tal como lo dejaba la version de 3 simulacros. Si un cambio futuro renombra la
+// clave o la forma del estado, esto falla: perder el progreso la noche antes del examen no se arregla.
+console.log('');
+console.log('Progreso guardado con la version anterior');
+const viejo={days:{'1':1,'2':1,'9':1},scores:{'1':{mod:[7,8,6,9,7,8],total:45,secs:2400,ts:1},'2':{mod:[8,8,7,9,8,8],total:48,secs:2300,ts:2}},
+  examDate:'2026-10-14',seen:{[T.B[0].id]:3,[T.B[5].id]:1},err:{[T.B[7].id]:2,[T.B[9].id]:1}};
+for(const k in store) delete store[k];
+store['cnv-idoneidad-v1']=JSON.stringify(viejo);
+for(const k in ids) delete ids[k];
+eval(js + ';globalThis.T2={S:S};');
+ok(JSON.stringify(T2.S)===JSON.stringify(viejo),'el estado viejo se lee sin cambiar ni un campo');
+ok(store['cnv-idoneidad-v1']===JSON.stringify(viejo),'y abrir la app no reescribe lo guardado');
+ok(ids.scoreBody.children.length===6,'la tabla muestra las 6 filas');
+ok(ids.scoreBody.children[1].innerHTML.indexOf('48/60')>0,'con el 48/60 del Simulacro 2 en su lugar');
+ok(ids.simCards.children[0].innerHTML.indexOf('Hecho')>0 && ids.simCards.children[3].innerHTML.indexOf('Al azar')>0,'tarjetas: 1 hecho, 4 al azar');
+
 
 console.log('\n'+(fails?fails+' FALLAS':'Todo en verde'));
 process.exit(fails?1:0);
