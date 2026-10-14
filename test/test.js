@@ -69,7 +69,7 @@ document.documentElement.setAttribute=function(k,v){ this._a[k]=v; };
 const store={};
 global.localStorage={ getItem:k=>store[k]||null, setItem:(k,v)=>{store[k]=v}, };
 
-eval(js + ';globalThis.T={getQ:function(){return Q;},prep:prep,B:B,renderQ:renderQ,S:S};');
+eval(js + ';globalThis.T={getQ:function(){return Q;},prep:prep,B:B,renderQ:renderQ,S:S,SIM7:SIM7,SIM7_CAT:SIM7_CAT};');
 const prep=(q)=>T.prep(q); const B=T.B; const renderQ=()=>T.renderQ();
 Object.defineProperty(globalThis,'Q',{get:()=>T.getQ()});
 
@@ -79,8 +79,8 @@ const ok=(cond,msg)=>{ console.log((cond?'  ok   ':'  FALLA')+'  '+msg); if(!con
 // ---------- 1. panel ----------
 console.log('\nPanel');
 ok(ids.modCards.children.length===6,'6 tarjetas de módulo');
-ok(ids.simCards.children.length===6,'6 tarjetas de simulacro (1-3 fijos, 4-6 al azar)');
-ok(ids.scoreBody.children.length===6,'6 filas en la tabla de puntajes');
+ok(ids.simCards.children.length===7,'7 tarjetas de simulacro (1-3 fijos, 4-6 al azar, 7 machete)');
+ok(ids.scoreBody.children.length===7,'7 filas en la tabla de puntajes');
 ok(ids.errCard.disabled===true,'"Repasar errores" arranca deshabilitado');
 ok(ids.weekTabs.children.length===4,'4 pestañas de semana');
 ok(ids.dayList.children.length===8,'7 días + encabezado en la semana 1');
@@ -250,6 +250,34 @@ const st3=JSON.parse(store['cnv-idoneidad-v1']);
 ok(st3.scores['6'] && st3.scores['6'].total===60,'el puntaje del Simulacro 6 se guarda en su fila');
 ok(st3.scores['1'] && st3.scores['1'].total===45,'y no pisa el del Simulacro 1');
 
+
+// ---------- 9b. simulacro 7: cuentas, plazos y leyes del machete ----------
+console.log('');
+console.log('Simulacro 7 (machete)');
+const ids7=Object.values(T.SIM7).flat().flatMap(g=>g.split('|'));
+const faltan=ids7.filter(id=>!T.B.some(q=>q.id===id));
+ok(!faltan.length,'todas las preguntas de la lista existen en el banco'+(faltan.length?' (faltan '+faltan+')':''));
+ok(new Set(ids7).size===ids7.length,'ninguna pregunta esta en dos familias ni dos veces');
+const conRG=ids7.filter(id=>{ const q=T.B.find(x=>x.id===id); return q && /RG|Resoluci[oó]n General/.test(q.q+' '+q.o[q.a]); });
+ok(!conRG.length,'ninguna es de una RG de la CNV'+(conRG.length?' ('+conRG+')':''));
+ok(['cuentas','plazos','leyes'].every(c=>T.SIM7[c].length>=20),'cada familia alcanza para 20');
+const s7=[0,1].map(()=>{ ids.backBtn.click(); ids.simCards.children[6].click(); const s=Q.qs.map(q=>q.id); ids.exitBtn.click(); return s; });
+ok(s7[0].length===60 && new Set(s7[0]).size===60,'Simulacro 7: 60 preguntas sin repetir');
+ok(['cuentas','plazos','leyes'].every(c=>s7[0].filter(id=>T.SIM7_CAT[id]===c).length===20),'Simulacro 7: 20 de cada familia');
+const grupos=Object.values(T.SIM7).flat().filter(g=>g.includes('|'));
+ok(grupos.every(g=>g.split('|').filter(id=>s7[0].includes(id)).length<=1),'de cada pregunta repetida en la guia sale una sola');
+ok(JSON.stringify(s7[0])!==JSON.stringify(s7[1]),'Simulacro 7: cada vez sale otro sorteo');
+ids.backBtn.click(); ids.simCards.children[6].click();
+Q.qs.forEach((q,k)=>{ Q.ans[k]=k<45?q.a:(q.a+1)%4; });
+Q.i=59; renderQ();
+ids.qFoot.children[ids.qFoot.children.length-1].click(); ids.qFoot.children[ids.qFoot.children.length-1].click();
+const st7=JSON.parse(store['cnv-idoneidad-v1']).scores['7'];
+ok(st7 && st7.total===45,'el puntaje del Simulacro 7 se guarda en su fila');
+ok(st7 && st7.tq.reduce((a,b)=>a+b,0)===60 && st7.mod.reduce((a,b)=>a+b,0)===45,'y guarda cuantas toco de cada modulo');
+ok(ids.resBars.children.length>=3 && ids.resBars.children[0].innerHTML.indexOf('Cuentas')>0,'el resultado abre con el desglose por familia');
+ids.backBtn.click();
+ok(ids.scoreBody.children[6].innerHTML.indexOf('/'+st7.tq[0])>0,'la tabla muestra cada modulo sobre lo que toco, no sobre 10');
+
 // ---------- 10. un progreso guardado ANTES de este cambio se carga intacto ----------
 // Es el estado tal como lo dejaba la version de 3 simulacros. Si un cambio futuro renombra la
 // clave o la forma del estado, esto falla: perder el progreso la noche antes del examen no se arregla.
@@ -263,7 +291,7 @@ for(const k in ids) delete ids[k];
 eval(js + ';globalThis.T2={S:S};');
 ok(JSON.stringify(T2.S)===JSON.stringify(viejo),'el estado viejo se lee sin cambiar ni un campo');
 ok(store['cnv-idoneidad-v1']===JSON.stringify(viejo),'y abrir la app no reescribe lo guardado');
-ok(ids.scoreBody.children.length===6,'la tabla muestra las 6 filas');
+ok(ids.scoreBody.children.length===7,'la tabla muestra las 7 filas');
 ok(ids.scoreBody.children[1].innerHTML.indexOf('48/60')>0,'con el 48/60 del Simulacro 2 en su lugar');
 ok(ids.simCards.children[0].innerHTML.indexOf('Hecho')>0 && ids.simCards.children[3].innerHTML.indexOf('Al azar')>0,'tarjetas: 1 hecho, 4 al azar');
 

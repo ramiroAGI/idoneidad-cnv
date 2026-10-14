@@ -278,7 +278,7 @@ td.total{font-weight:600}
   </section>
 
   <section>
-    <div class="sec-head"><h2>Simulacros</h2><span class="note">60 preguntas (10 por módulo), 45 minutos, sin corrección hasta el final. Del 1 al 3 son fijos; del 4 al 6, al azar.</span></div>
+    <div class="sec-head"><h2>Simulacros</h2><span class="note">60 preguntas, 45 minutos, sin corrección hasta el final. Del 1 al 6, 10 por módulo: del 1 al 3 son fijos y del 4 al 6, al azar. El 7 es el del machete: cuentas, plazos y leyes.</span></div>
     <div class="grid cards" id="simCards"></div>
   </section>
 
@@ -437,9 +437,48 @@ function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floo
 // 4..6 son AL AZAR, 10 por modulo sorteadas de nuevo cada vez que se abren (pedido de Ramiro,
 // 13/10, la noche antes del examen). Los puntajes van a S.scores[n] como los otros: sumar
 // simulacros no cambia la forma del estado guardado, asi que el progreso no se pierde.
-var SIMS=[1,2,3,4,5,6];
+var SIMS=[1,2,3,4,5,6,7];
 function simAzar(n){ return n>3; }
-function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco; 4..6 → al azar
+// Simulacro 7 = "el del machete" (pedido de Ramiro, 14/10): sólo lo que hay que saber de
+// memoria, en las tres familias que más se olvidan — CUENTAS (tasas, caución, suscripción,
+// bonos, opciones, ratios), PLAZOS (días, meses, años, periodicidades) y LEYES (leyes, decretos y
+// artículos). 20 de cada una, sorteadas cada vez. Las RG de la CNV quedan AFUERA a propósito, y
+// también las preguntas de "qué Resolución UIF dice tal cosa": son resoluciones, no leyes; un
+// plazo que la guía ata a una resolución UIF sí entra, porque lo que se pregunta es el plazo.
+// La lista está curada A MANO contra el machete, no sale de buscar palabras: un filtro por
+// "días" o "Ley" mete ruido ("¿qué es un FCI?" cae por "plazo" en una opción).
+// "A|B" = la guía pregunta lo mismo dos o tres veces (o se contradice entre esas versiones):
+// sale UNA sola por sorteo, para no gastar dos lugares del simulacro en la misma pregunta.
+var SIM7={
+  cuentas:["M1-46","M1-36","M2-21","M2-22","M4-51","M4-52","M4-53","M4-104","M4-129","M4-47","M4-48",
+    "M4-49","M4-107","M4-50","M5-45","M5-46","M5-102","M5-103","M5-104","M5-47","M5-22","M5-105","M5-23",
+    "M5-106","M5-107","M5-108","M5-109","M5-110","M5-113","M5-52","M6-09"],
+  plazos:["M1-06|M1-113","M1-13|M3-75","M1-15","M1-18","M1-19","M1-114","M1-122","M1-39","M1-45",
+    "M2-48","M2-85|M2-19","M2-16|M2-105","M2-24","M2-23","M2-98","M2-18","M2-79","M2-15|M2-65|M2-91|M2-104",
+    "M2-31|M2-96","M2-30|M2-106","M2-33","M2-47|M2-111",
+    "M3-68|M3-78|M3-04|M3-96|M3-103","M3-71|M4-115|M4-18","M3-38","M3-08|M3-101|M3-104","M3-35","M3-23",
+    "M3-34","M3-99|M3-106","M3-39|M6-34","M4-17","M4-87","M5-31",
+    "M6-28","M6-47","M6-60","M6-55","M6-56","M6-11","M6-12","M6-101","M6-102","M6-54|M6-99","M6-57"],
+  leyes:["M1-01","M1-02","M1-08","M1-09","M1-47","M1-50","M1-51","M1-20|M4-113","M1-10","M1-116","M1-93",
+    "M1-98","M2-04","M2-50","M2-54","M2-62","M2-64","M2-26","M2-40","M2-71","M2-41|M2-103","M2-76|M5-41",
+    "M3-69|M3-44","M3-33|M4-33","M3-47","M3-45","M4-67","M4-72","M4-88","M5-64","M5-67","M5-119","M5-76",
+    "M5-58","M5-07","M5-100","M5-101","M6-02|M6-113","M6-109","M6-68","M6-76","M6-39"]
+};
+var SIM7_CATS=[["cuentas","Cuentas"],["plazos","Plazos"],["leyes","Leyes"]];
+var SIM7_CAT={};   // id → familia, para el desglose del resultado
+function simMachete(){
+  var r=[];
+  SIM7_CATS.forEach(function(c){
+    shuffle(SIM7[c[0]]).slice(0,20).forEach(function(g){
+      var alt=g.split("|"), id=alt[Math.floor(Math.random()*alt.length)];
+      var q=B.filter(function(x){ return x.id===id; })[0];
+      if(q){ SIM7_CAT[id]=c[0]; r.push(q); }
+    });
+  });
+  return r;
+}
+function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco; 4..6 → al azar; 7 → machete
+  if(n===7) return simMachete();
   if(simAzar(n)){
     var r=[];
     MODS.forEach(function(M){ r=r.concat(shuffle(byMod(M.n)).slice(0,10)); });
@@ -512,9 +551,10 @@ function renderPanel(){
     var sv=S.scores[n], az=simAzar(n);
     var b=document.createElement("button");
     b.className="card";
-    b.innerHTML='<span class="tag'+(sv?" done":"")+'">'+(sv?"Hecho · "+sv.total+"/60":(az?"Al azar":"Día "+(20+n*2)))+'</span>'+
+    b.innerHTML='<span class="tag'+(sv?" done":"")+'">'+(sv?"Hecho · "+sv.total+"/60":(n===7?"Machete":(az?"Al azar":"Día "+(20+n*2))))+'</span>'+
       '<h3>Simulacro '+n+'</h3>'+
-      '<p class="desc">'+(az?'60 preguntas sorteadas de todo el banco, distintas cada vez. 45 minutos.'
+      '<p class="desc">'+(n===7?'Sólo lo de memoria: 20 cuentas, 20 plazos y 20 leyes (sin RG), sorteadas cada vez. 45 minutos.'
+                            :az?'60 preguntas sorteadas de todo el banco, distintas cada vez. 45 minutos.'
                             :'60 preguntas, 45 minutos, de corrido. Como el examen real.')+'</p>'+
       '<span class="meta">'+(sv?"Rehacer (se pisa el puntaje)":"Sin hacer")+'</span>';
     b.addEventListener("click",function(){ start({mode:"simulacro",sim:n}); });
@@ -525,8 +565,10 @@ function renderPanel(){
   var tb=el("scoreBody"); tb.innerHTML="";
   SIMS.forEach(function(n){
     var sv=S.scores[n], tr=document.createElement("tr");
-    var cells='<td>Simulacro '+n+(simAzar(n)?' <span class="dash">(azar)</span>':'')+'</td>';
-    for(var m=1;m<=6;m++){ cells+='<td class="num">'+(sv?sv.mod[m-1]+"/10":'<span class="dash">—</span>')+'</td>'; }
+    var cells='<td>Simulacro '+n+(n===7?' <span class="dash">(machete)</span>':simAzar(n)?' <span class="dash">(azar)</span>':'')+'</td>';
+    // El 7 no reparte 10 por módulo (sale de la familia, no del módulo): guarda cuántas tocaron
+    // de cada uno en `tq`. Los puntajes viejos no lo traen y siguen siendo /10.
+    for(var m=1;m<=6;m++){ cells+='<td class="num">'+(sv?sv.mod[m-1]+"/"+(sv.tq?sv.tq[m-1]:10):'<span class="dash">—</span>')+'</td>'; }
     cells+='<td class="num total">'+(sv?'<span class="pill '+(sv.total>=42?"ok":"bad")+'">'+sv.total+'/60</span>':'<span class="dash">—</span>')+'</td>';
     cells+='<td class="num">'+(sv?fmt(sv.secs):'<span class="dash">—</span>')+'</td>';
     tr.innerHTML=cells; tb.appendChild(tr);
@@ -765,7 +807,10 @@ function finish(){
       S.err[q.id]=2;   // fallarla la manda al inicio: dos aciertos para salir
     }
   });
-  if(Q.mode==="simulacro"){ S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()}; }
+  if(Q.mode==="simulacro"){
+    S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()};
+    if(Q.sim===7) S.scores[7].tq=MODS.map(function(M){ return Q.qs.filter(function(q){ return q.m===M.n; }).length; });
+  }
   save();
 
   var n=Q.qs.length;
@@ -786,11 +831,28 @@ function finish(){
 
   // barras por módulo
   var bars=el("resBars"); bars.innerHTML="";
+  // En el 7 lo que importa es la FAMILIA (¿fallo las cuentas o los plazos?), así que va primero,
+  // con la meta del examen: 70%.
+  if(Q.sim===7){
+    SIM7_CATS.forEach(function(c){
+      var ks=Q.qs.map(function(q,k){ return k; }).filter(function(k){ return SIM7_CAT[Q.qs[k].id]===c[0]; });
+      if(!ks.length) return;
+      var g=ks.filter(function(k){ return Q.ans[k]===Q.qs[k].a; }).length, n7=ks.length, mt=Math.ceil(n7*0.7);
+      var row=document.createElement("div");
+      row.className="bar";
+      row.innerHTML='<span><b>'+c[1]+'</b></span>'+
+        '<span class="track"><i class="fill'+(g<mt?" under":"")+'" style="width:'+(g/n7*100)+'%"></i>'+
+        '<i class="goal" style="left:calc('+(mt/n7*100)+'% - 1px)"></i></span>'+
+        '<span class="val">'+g+'/'+n7+'</span>';
+      bars.appendChild(row);
+    });
+  }
   MODS.forEach(function(M){
     var tq=Q.qs.filter(function(q){ return q.m===M.n; }).length;
     if(!tq) return;
     var got=mod[M.n-1];
-    var meta=Q.mode==="simulacro"?M.meta:Math.round(M.meta/10*tq);
+    // Meta proporcional a cuántas tocaron del módulo; con 10 (simulacros 1-6) da la meta de siempre.
+    var meta=(Q.mode==="simulacro"&&tq===10)?M.meta:Math.round(M.meta/10*tq);
     var row=document.createElement("div");
     row.className="bar";
     row.innerHTML='<span>M'+M.n+' <span style="color:var(--fg-3)">'+M.t.split(",")[0]+'</span></span>'+
