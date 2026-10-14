@@ -273,12 +273,12 @@ td.total{font-weight:600}
   </div>
 
   <section style="margin-top:26px">
-    <div class="sec-head"><h2>Práctica por módulo</h2><span class="note">Corrección y explicación en el momento. Las de 10 salen de las que todavía no viste; el botón de al lado toma el módulo entero.</span></div>
+    <div class="sec-head"><h2>Práctica por módulo</h2><span class="note">Corrección y explicación en el momento. Las de 10 salen de las que todavía no viste; el botón de al lado toma el módulo entero. El Machete junta, de todos los módulos, sólo cuentas, plazos y leyes.</span></div>
     <div class="grid cards" id="modCards"></div>
   </section>
 
   <section>
-    <div class="sec-head"><h2>Simulacros</h2><span class="note">60 preguntas, 45 minutos, sin corrección hasta el final. Del 1 al 6, 10 por módulo: del 1 al 3 son fijos y del 4 al 6, al azar. El 7 es el del machete: cuentas, plazos y leyes.</span></div>
+    <div class="sec-head"><h2>Simulacros</h2><span class="note">60 preguntas (10 por módulo), 45 minutos, sin corrección hasta el final. Del 1 al 3 son fijos; del 4 al 6, al azar.</span></div>
     <div class="grid cards" id="simCards"></div>
   </section>
 
@@ -1184,19 +1184,20 @@ function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floo
 // 4..6 son AL AZAR, 10 por modulo sorteadas de nuevo cada vez que se abren (pedido de Ramiro,
 // 13/10, la noche antes del examen). Los puntajes van a S.scores[n] como los otros: sumar
 // simulacros no cambia la forma del estado guardado, asi que el progreso no se pierde.
-var SIMS=[1,2,3,4,5,6,7];
-function simAzar(n){ return n>3; }
-// Simulacro 7 = "el del machete" (pedido de Ramiro, 14/10): sólo lo que hay que saber de
-// memoria, en las tres familias que más se olvidan — CUENTAS (tasas, caución, suscripción,
-// bonos, opciones, ratios), PLAZOS (días, meses, años, periodicidades) y LEYES (leyes, decretos y
-// artículos). 20 de cada una, sorteadas cada vez. Las RG de la CNV quedan AFUERA a propósito, y
-// también las preguntas de "qué Resolución UIF dice tal cosa": son resoluciones, no leyes; un
-// plazo que la guía ata a una resolución UIF sí entra, porque lo que se pregunta es el plazo.
-// La lista está curada A MANO contra el machete, no sale de buscar palabras: un filtro por
-// "días" o "Ley" mete ruido ("¿qué es un FCI?" cae por "plazo" en una opción).
-// "A|B" = la guía pregunta lo mismo dos o tres veces (o se contradice entre esas versiones):
-// sale UNA sola por sorteo, para no gastar dos lugares del simulacro en la misma pregunta.
-var SIM7={
+var SIMS=[1,2,3,4,5,6];
+// MACHETE (pedido de Ramiro, 14/10): una tarjeta mas en "Practica por modulo", con correccion en
+// el momento como los modulos, pero sólo con lo que hay que saber de memoria en las tres familias
+// que más se olvidan — CUENTAS (tasas, caución, suscripción, bonos, opciones, ratios), PLAZOS
+// (días, meses, años, periodicidades) y LEYES (leyes, decretos y artículos). Sale del
+// Machete-CNV-Idoneidad.pdf. Las RG de la CNV quedan AFUERA a propósito, y también las de "qué
+// Resolución UIF dice tal cosa": son resoluciones, no leyes; un plazo que la guía ata a una
+// resolución UIF sí entra, porque lo que se pregunta es el plazo.
+// La lista está curada A MANO contra el machete: un filtro por "días" o "Ley" mete ruido ("¿qué es
+// un FCI?" caía por "plazo" en una opción).
+// "A|B" = la guía pregunta lo mismo dos o tres veces (o se contradice entre esas versiones): en
+// cada tanda sale UNA sola, para no gastar dos lugares en la misma pregunta.
+// No es un módulo del banco (las preguntas siguen siendo de su módulo, para errores y "vistas").
+var MACHETE={
   cuentas:["M1-46","M1-36","M2-21","M2-22","M4-51","M4-52","M4-53","M4-104","M4-129","M4-47","M4-48",
     "M4-49","M4-107","M4-50","M5-45","M5-46","M5-102","M5-103","M5-104","M5-47","M5-22","M5-105","M5-23",
     "M5-106","M5-107","M5-108","M5-109","M5-110","M5-113","M5-52","M6-09"],
@@ -1211,21 +1212,30 @@ var SIM7={
     "M3-69|M3-44","M3-33|M4-33","M3-47","M3-45","M4-67","M4-72","M4-88","M5-64","M5-67","M5-119","M5-76",
     "M5-58","M5-07","M5-100","M5-101","M6-02|M6-113","M6-109","M6-68","M6-76","M6-39"]
 };
-var SIM7_CATS=[["cuentas","Cuentas"],["plazos","Plazos"],["leyes","Leyes"]];
-var SIM7_CAT={};   // id → familia, para el desglose del resultado
-function simMachete(){
+var MACHETE_CATS=[["cuentas","Cuentas"],["plazos","Plazos"],["leyes","Leyes"]];
+var MACHETE_CAT={};   // id → familia, para el desglose del resultado
+var MACHETE_N=MACHETE.cuentas.length+MACHETE.plazos.length+MACHETE.leyes.length;
+function machetePool(){ // una versión por grupo, la que menos viste (al azar entre empatadas)
   var r=[];
-  SIM7_CATS.forEach(function(c){
-    shuffle(SIM7[c[0]]).slice(0,20).forEach(function(g){
-      var alt=g.split("|"), id=alt[Math.floor(Math.random()*alt.length)];
-      var q=B.filter(function(x){ return x.id===id; })[0];
-      if(q){ SIM7_CAT[id]=c[0]; r.push(q); }
+  MACHETE_CATS.forEach(function(c){
+    MACHETE[c[0]].forEach(function(g){
+      var alt=shuffle(g.split("|")).sort(function(a,b){ return (S.seen[a]||0)-(S.seen[b]||0); });
+      var q=B.filter(function(x){ return x.id===alt[0]; })[0];
+      if(q){ MACHETE_CAT[q.id]=c[0]; r.push(q); }
     });
   });
   return r;
 }
-function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco; 4..6 → al azar; 7 → machete
-  if(n===7) return simMachete();
+function macheteVistas(){ // un grupo cuenta como visto si viste cualquiera de sus versiones
+  var n=0;
+  MACHETE_CATS.forEach(function(c){ MACHETE[c[0]].forEach(function(g){
+    if(g.split("|").some(function(id){ return S.seen[id]; })) n++;
+  }); });
+  return n;
+}
+
+function simAzar(n){ return n>3; }
+function simSet(n){ // n = 1..3 → 10 por módulo, repartidas por el banco; 4..6 → al azar
   if(simAzar(n)){
     var r=[];
     MODS.forEach(function(M){ r=r.concat(shuffle(byMod(M.n)).slice(0,10)); });
@@ -1291,6 +1301,30 @@ function renderPanel(){
     row.appendChild(b1); row.appendChild(b2);
     mc.appendChild(c);
   });
+  (function(){
+    var vistas=macheteVistas(), total=MACHETE_N;
+    var c=document.createElement("div");
+    c.className="card";
+    c.innerHTML='<span class="tag">Machete</span>'+
+      '<h3>Cuentas, plazos y leyes</h3>'+
+      '<p class="desc">De todos los módulos, sólo lo de memoria. Sin RG.</p>'+
+      '<span class="cov"><i style="width:'+(vistas/total*100)+'%"></i></span>'+
+      '<span class="meta">'+(vistas===total
+        ? 'Viste las '+total+'. Segunda vuelta en curso.'
+        : 'Viste '+vistas+' de '+total)+'</span>'+
+      '<span class="row"></span>';
+    var row=c.querySelector(".row");
+    var b1=document.createElement("button");
+    b1.className="btn btn-s btn-p"; b1.textContent="10 preguntas";
+    b1.title="Prioriza las que todavía no viste";
+    b1.addEventListener("click",function(){ start({mode:"practica",mod:"machete"}); });
+    var b2=document.createElement("button");
+    b2.className="btn btn-s"; b2.textContent="Las "+total;
+    b2.title="El machete completo, de corrido";
+    b2.addEventListener("click",function(){ start({mode:"practica",mod:"machete",full:1}); });
+    row.appendChild(b1); row.appendChild(b2);
+    mc.appendChild(c);
+  })();
 
   // simulacros
   var sc=el("simCards"); sc.innerHTML="";
@@ -1298,10 +1332,9 @@ function renderPanel(){
     var sv=S.scores[n], az=simAzar(n);
     var b=document.createElement("button");
     b.className="card";
-    b.innerHTML='<span class="tag'+(sv?" done":"")+'">'+(sv?"Hecho · "+sv.total+"/60":(n===7?"Machete":(az?"Al azar":"Día "+(20+n*2))))+'</span>'+
+    b.innerHTML='<span class="tag'+(sv?" done":"")+'">'+(sv?"Hecho · "+sv.total+"/60":(az?"Al azar":"Día "+(20+n*2)))+'</span>'+
       '<h3>Simulacro '+n+'</h3>'+
-      '<p class="desc">'+(n===7?'Sólo lo de memoria: 20 cuentas, 20 plazos y 20 leyes (sin RG), sorteadas cada vez. 45 minutos.'
-                            :az?'60 preguntas sorteadas de todo el banco, distintas cada vez. 45 minutos.'
+      '<p class="desc">'+(az?'60 preguntas sorteadas de todo el banco, distintas cada vez. 45 minutos.'
                             :'60 preguntas, 45 minutos, de corrido. Como el examen real.')+'</p>'+
       '<span class="meta">'+(sv?"Rehacer (se pisa el puntaje)":"Sin hacer")+'</span>';
     b.addEventListener("click",function(){ start({mode:"simulacro",sim:n}); });
@@ -1312,10 +1345,8 @@ function renderPanel(){
   var tb=el("scoreBody"); tb.innerHTML="";
   SIMS.forEach(function(n){
     var sv=S.scores[n], tr=document.createElement("tr");
-    var cells='<td>Simulacro '+n+(n===7?' <span class="dash">(machete)</span>':simAzar(n)?' <span class="dash">(azar)</span>':'')+'</td>';
-    // El 7 no reparte 10 por módulo (sale de la familia, no del módulo): guarda cuántas tocaron
-    // de cada uno en `tq`. Los puntajes viejos no lo traen y siguen siendo /10.
-    for(var m=1;m<=6;m++){ cells+='<td class="num">'+(sv?sv.mod[m-1]+"/"+(sv.tq?sv.tq[m-1]:10):'<span class="dash">—</span>')+'</td>'; }
+    var cells='<td>Simulacro '+n+(simAzar(n)?' <span class="dash">(azar)</span>':'')+'</td>';
+    for(var m=1;m<=6;m++){ cells+='<td class="num">'+(sv?sv.mod[m-1]+"/10":'<span class="dash">—</span>')+'</td>'; }
     cells+='<td class="num total">'+(sv?'<span class="pill '+(sv.total>=42?"ok":"bad")+'">'+sv.total+'/60</span>':'<span class="dash">—</span>')+'</td>';
     cells+='<td class="num">'+(sv?fmt(sv.secs):'<span class="dash">—</span>')+'</td>';
     tr.innerHTML=cells; tb.appendChild(tr);
@@ -1380,14 +1411,14 @@ function show(v){
 function start(o){
   var qs, title;
   if(o.mode==="practica"){
-    var pool=byMod(o.mod);
+    var mach=o.mod==="machete", pool=mach?machetePool():byMod(o.mod), nom=mach?"Machete":"Módulo "+o.mod;
     if(o.full){
       qs=shuffle(pool);
-      title="Módulo "+o.mod+" · las "+pool.length+" del banco";
+      title=nom+" · las "+pool.length+(mach?"":" del banco");
     } else {
       // rotación: primero las que menos veces viste, al azar entre las empatadas
       qs=shuffle(pool).sort(function(a,b){ return (S.seen[a.id]||0)-(S.seen[b.id]||0); }).slice(0,10);
-      title="Módulo "+o.mod+" · práctica de 10";
+      title=nom+" · práctica de 10";
     }
   } else if(o.mode==="errores"){
     var pend=errIds();
@@ -1554,15 +1585,12 @@ function finish(){
       S.err[q.id]=2;   // fallarla la manda al inicio: dos aciertos para salir
     }
   });
-  if(Q.mode==="simulacro"){
-    S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()};
-    if(Q.sim===7) S.scores[7].tq=MODS.map(function(M){ return Q.qs.filter(function(q){ return q.m===M.n; }).length; });
-  }
+  if(Q.mode==="simulacro"){ S.scores[Q.sim]={mod:mod,total:tot,secs:secs,ts:Date.now()}; }
   save();
 
   var n=Q.qs.length;
   el("resTitle").textContent = Q.mode==="simulacro" ? "Simulacro "+Q.sim
-    : (Q.mode==="errores" ? "Repaso de errores" : "Módulo "+Q.mod+" · práctica");
+    : (Q.mode==="errores" ? "Repaso de errores" : (Q.mod==="machete"?"Machete":"Módulo "+Q.mod)+" · práctica");
   el("resBig").textContent=tot+"/"+n;
   var v=el("resVerdict");
   if(Q.mode==="simulacro"){
@@ -1578,19 +1606,19 @@ function finish(){
 
   // barras por módulo
   var bars=el("resBars"); bars.innerHTML="";
-  // En el 7 lo que importa es la FAMILIA (¿fallo las cuentas o los plazos?), así que va primero,
-  // con la meta del examen: 70%.
-  if(Q.sim===7){
-    SIM7_CATS.forEach(function(c){
-      var ks=Q.qs.map(function(q,k){ return k; }).filter(function(k){ return SIM7_CAT[Q.qs[k].id]===c[0]; });
+  // En el machete lo que importa es la FAMILIA (¿fallo las cuentas o los plazos?), así que va
+  // primero, con la meta del examen: 70%.
+  if(Q.mod==="machete"){
+    MACHETE_CATS.forEach(function(c){
+      var ks=Q.qs.map(function(q,k){ return k; }).filter(function(k){ return MACHETE_CAT[Q.qs[k].id]===c[0]; });
       if(!ks.length) return;
-      var g=ks.filter(function(k){ return Q.ans[k]===Q.qs[k].a; }).length, n7=ks.length, mt=Math.ceil(n7*0.7);
+      var g=ks.filter(function(k){ return Q.ans[k]===Q.qs[k].a; }).length, nf=ks.length, mt=Math.ceil(nf*0.7);
       var row=document.createElement("div");
       row.className="bar";
       row.innerHTML='<span><b>'+c[1]+'</b></span>'+
-        '<span class="track"><i class="fill'+(g<mt?" under":"")+'" style="width:'+(g/n7*100)+'%"></i>'+
-        '<i class="goal" style="left:calc('+(mt/n7*100)+'% - 1px)"></i></span>'+
-        '<span class="val">'+g+'/'+n7+'</span>';
+        '<span class="track"><i class="fill'+(g<mt?" under":"")+'" style="width:'+(g/nf*100)+'%"></i>'+
+        '<i class="goal" style="left:calc('+(mt/nf*100)+'% - 1px)"></i></span>'+
+        '<span class="val">'+g+'/'+nf+'</span>';
       bars.appendChild(row);
     });
   }
@@ -1598,8 +1626,7 @@ function finish(){
     var tq=Q.qs.filter(function(q){ return q.m===M.n; }).length;
     if(!tq) return;
     var got=mod[M.n-1];
-    // Meta proporcional a cuántas tocaron del módulo; con 10 (simulacros 1-6) da la meta de siempre.
-    var meta=(Q.mode==="simulacro"&&tq===10)?M.meta:Math.round(M.meta/10*tq);
+    var meta=Q.mode==="simulacro"?M.meta:Math.round(M.meta/10*tq);
     var row=document.createElement("div");
     row.className="bar";
     row.innerHTML='<span>M'+M.n+' <span style="color:var(--fg-3)">'+M.t.split(",")[0]+'</span></span>'+
